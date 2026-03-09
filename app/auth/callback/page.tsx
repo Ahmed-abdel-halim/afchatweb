@@ -27,11 +27,11 @@
 
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setToken } from "@/lib/auth";
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter();
   const sp = useSearchParams();
 
@@ -46,9 +46,18 @@ export default function AuthCallbackPage() {
   }, [router, sp]);
 
   return (
+    <div className="bg-black/25 p-6 rounded-2xl">جارٍ تسجيل الدخول...</div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 text-white">
-      <div className="bg-black/25 p-6 rounded-2xl">جارٍ تسجيل الدخول...</div>
+      <Suspense fallback={<div className="bg-black/25 p-6 rounded-2xl">تحميل...</div>}>
+        <AuthCallbackContent />
+      </Suspense>
     </div>
   );
 }
+
 
