@@ -223,6 +223,17 @@ export function getSetupBySlug(slug: string) {
   return request<any>(`/api/setups/${encodeURIComponent(slug)}`);
 }
 
+export function addPunchline(setupId: number, payload: {
+  media_type: "text" | "image" | "video";
+  text?: string;
+  media_url?: string | null;
+}) {
+  return request<{ data: any }>(`/api/setups/${setupId}/punchlines`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 
 
 

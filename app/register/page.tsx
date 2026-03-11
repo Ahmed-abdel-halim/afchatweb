@@ -4,6 +4,7 @@ import { useState } from "react";
 import { register } from "@/lib/api";
 import { setToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -19,85 +20,100 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const res = await register(name, email, password);
-      if (res.token) {
-        setToken(res.token);
-        router.push("/");
-      }
+      setToken(res.token);
+      router.push("/");
     } catch (e: any) {
-      setErr(e?.message || "فشل التسجيل");
+      setErr(e?.message || "فشل التسجيل. تأكد من صحة البيانات.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
-      <form
-        onSubmit={onSubmit}
-        className="w-full max-w-md bg-black/25 p-8 rounded-2xl text-white backdrop-blur-xl border border-white/10"
+    <div className="min-h-screen bg-[#0D0F14] text-white flex items-center justify-center p-6 font-[family-name:var(--font-almarai)] relative overflow-hidden">
+      {/* Background Gradients */}
+      <div className="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-600/20 blur-[120px] rounded-full" />
+      <div className="fixed bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-pink-600/20 blur-[120px] rounded-full" />
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-sm relative z-10"
       >
-        <h1 className="text-3xl font-extrabold mb-6 text-center">إنشاء حساب جديد</h1>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm mb-1 opacity-80">الاسم</label>
-            <input
-              className="w-full rounded-xl px-4 py-3 bg-white/15 border border-white/20 outline-none focus:bg-white/20 transition"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="اسمه إيه؟"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm mb-1 opacity-80">البريد الإلكتروني</label>
-            <input
-              className="w-full rounded-xl px-4 py-3 bg-white/15 border border-white/20 outline-none focus:bg-white/20 transition"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              type="email"
-              placeholder="example@mail.com"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm mb-1 opacity-80">كلمة السر</label>
-            <input
-              className="w-full rounded-xl px-4 py-3 bg-white/15 border border-white/20 outline-none focus:bg-white/20 transition"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              type="password"
-              placeholder="كلمة سر قوية"
-              required
-            />
-          </div>
+        <div className="text-center mb-10">
+          <h1 className="text-5xl font-black italic tracking-tighter mb-4 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">أفشات</h1>
+          <p className="text-white/50 font-bold uppercase tracking-widest text-xs">إنضم الآن لأكبر مجتمع ضحك</p>
         </div>
 
-        {err && (
-          <div className="mt-4 p-3 rounded-xl bg-red-500/20 border border-red-500/50 text-red-200 text-sm">
-            {err}
-          </div>
-        )}
+        <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-10 shadow-2xl relative group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 blur-3xl rounded-full" />
+          
+          <form onSubmit={onSubmit} className="relative z-10 space-y-6">
+            <h2 className="text-2xl font-black mb-8 text-center tracking-tight">إنشاء حساب جديد ✨</h2>
 
-        <button
-          disabled={loading}
-          className="w-full mt-8 rounded-xl bg-yellow-400 text-black font-bold px-4 py-3 hover:bg-yellow-500 transition disabled:opacity-70 shadow-lg"
-        >
-          {loading ? "جاري التحميل..." : "إنشاء حساب"}
-        </button>
+            {/* Inputs */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2 ml-2">الإسم</label>
+                <input
+                  type="text"
+                  className="w-full h-14 rounded-2xl bg-white/5 border border-white/10 px-6 outline-none focus:border-purple-500/50 focus:bg-white/10 transition"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="الإسم المستعار"
+                  required
+                />
+              </div>
 
-        <div className="flex items-center justify-center mt-6 text-sm">
-          <button
-            type="button"
-            onClick={() => router.push("/login")}
-            className="text-white/70 hover:text-white transition"
-          >
-            عندك حساب أصلاً؟ <span className="font-bold underline">سجل دخول</span>
-          </button>
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2 ml-2">الإيميل</label>
+                <input
+                  type="email"
+                  className="w-full h-14 rounded-2xl bg-white/5 border border-white/10 px-6 outline-none focus:border-purple-500/50 focus:bg-white/10 transition"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2 ml-2">الباسورد</label>
+                <input
+                  type="password"
+                  className="w-full h-14 rounded-2xl bg-white/5 border border-white/10 px-6 outline-none focus:border-purple-500/50 focus:bg-white/10 transition"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+            </div>
+
+            {err && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium text-center"
+              >
+                ⚠️ {err}
+              </motion.div>
+            )}
+
+            <button
+              disabled={loading}
+              className="w-full h-14 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 font-black shadow-2xl shadow-purple-600/20 hover:scale-[1.02] transition active:scale-[0.98] disabled:opacity-50"
+            >
+              {loading ? "جاري الإنشاء..." : "إنشاء 🚀"}
+            </button>
+          </form>
         </div>
-      </form>
+
+        <div className="mt-8 flex items-center justify-center gap-8 text-xs font-bold uppercase tracking-widest">
+           <button onClick={() => router.push("/login")} className="text-white/40 hover:text-white transition underline underline-offset-8">لديك حساب؟ سجل الآن</button>
+           <button onClick={() => router.push("/")} className="text-white/40 hover:text-white transition">الرئيسية</button>
+        </div>
+      </motion.div>
     </div>
   );
 }
