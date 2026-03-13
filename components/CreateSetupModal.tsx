@@ -13,7 +13,7 @@ type Props = {
 export default function CreateSetupModal({ open, onClose, onCreated }: Props) {
   const [mediaType, setMediaType] = useState<"text" | "image" | "video">("text");
   const [text, setText] = useState("");
-  const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [tagsText, setTagsText] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
@@ -29,17 +29,17 @@ export default function CreateSetupModal({ open, onClose, onCreated }: Props) {
       setErr("اكتب نص الأفشة أولاً.");
       return;
     }
-    
+
     setLoading(true);
     try {
       await createSetup({
         text: text.trim(),
         media_type: mediaType,
-        media_url: mediaType === "text" ? null : mediaUrl.trim(),
+        media_file: mediaType === "text" ? null : mediaFile,
         tags,
       });
       setText("");
-      setMediaUrl("");
+      setMediaFile(null);
       setTagsText("");
       onClose();
       onCreated?.();
@@ -53,105 +53,178 @@ export default function CreateSetupModal({ open, onClose, onCreated }: Props) {
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-[#0D0F14]/90 backdrop-blur-md"
           />
-          
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-lg rounded-[2.5rem] bg-[#0D0F14] border border-white/10 p-8 shadow-2xl overflow-hidden"
-          >
-            {/* Decoration */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-pink-500/10 blur-3xl rounded-full translate-y-1/2 -translate-x-1/2" />
 
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-black italic tracking-tight">إضافة أفشة جديدة 🎙️</h2>
-              <button 
-                onClick={onClose} 
-                className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10 hover:bg-white/10 transition"
-              >
-                ✕
-              </button>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 30 }}
+            className="relative w-full max-w-lg bg-[#161922] border border-white/10 rounded-[2.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.6)] overflow-hidden"
+          >
+            {/* Ambient Background Glows */}
+            <div className="absolute -top-24 -left-24 w-60 h-60 bg-orange-600/10 blur-[100px] rounded-full" />
+            <div className="absolute -bottom-24 -right-24 w-60 h-60 bg-pink-600/10 blur-[100px] rounded-full" />
+
+            {/* Header Section */}
+            <div className="relative p-6 pb-4 border-b border-white/5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl filter drop-shadow-md">🎙️</span>
+                  <div>
+                    <h2 className="text-2xl font-black italic tracking-tight text-white">إضافة أفشة جديدة</h2>
+                  </div>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="w-11 h-11 rounded-2xl bg-white/5 flex items-center justify-center hover:bg-white/10 border border-white/10 transition group"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-90 transition-transform duration-300"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-6">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-white/50 mb-3 ml-2">نوع المحتوى</label>
-                <div className="flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/5">
+            {/* Form Body */}
+            <div className="relative p-8 pt-6 space-y-5">
+
+              {/* Media Type Switcher */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase tracking-[0.25em] text-white/20 px-4">نوع المحتوى</label>
+                <div className="flex p-1.5 bg-black/40 rounded-[1.5rem] border border-white/5 relative">
                   {(['text', 'image', 'video'] as const).map((type) => (
                     <button
                       key={type}
                       onClick={() => setMediaType(type)}
-                      className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                        mediaType === type 
-                        ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20' 
-                        : 'text-white/40 hover:text-white/60'
-                      }`}
+                      className={`flex-1 relative py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 z-10 ${mediaType === type ? "text-white" : "text-white/30 hover:text-white/50"
+                        }`}
                     >
-                      {type === 'text' ? 'نص' : type === 'image' ? 'صورة' : 'فيديو'}
+                      {mediaType === type && (
+                        <motion.div
+                          layoutId="active-setup-pill"
+                          className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl shadow-lg ring-1 ring-white/10"
+                        />
+                      )}
+                      <span className="relative z-20 flex items-center justify-center gap-2">
+                        {type === 'text' && <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>}
+                        {type === 'image' && <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>}
+                        {type === 'video' && <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.934a.5.5 0 0 0-.777-.416L16 11" /><rect width="14" height="12" x="2" y="6" rx="2" /></svg>}
+                        {type === 'text' ? 'نص' : type === 'image' ? 'صورة' : 'فيديو'}
+                      </span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-white/50 mb-3 ml-2">الموقف / الأفشة</label>
-                <textarea
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  className="w-full rounded-2xl px-5 py-4 bg-white/5 border border-white/10 outline-none focus:border-purple-500/50 focus:bg-white/10 transition min-h-[140px] text-lg leading-relaxed placeholder:text-white/20"
-                  placeholder="اكتب الموقف اللي حصل..."
-                />
-              </div>
-
-              {mediaType !== 'text' && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                >
-                  <label className="block text-xs font-bold uppercase tracking-widest text-white/50 mb-3 ml-2">رابط الميديا (URL)</label>
-                  <input
-                    value={mediaUrl}
-                    onChange={(e) => setMediaUrl(e.target.value)}
-                    className="w-full rounded-2xl px-5 py-4 bg-white/5 border border-white/10 outline-none focus:border-purple-500/50 focus:bg-white/10 transition"
-                    placeholder="https://example.com/image.jpg"
+              {/* Main Textarea */}
+              <div className="space-y-3">
+                <div className="relative group">
+                  <label className="text-[10px] font-black uppercase tracking-[0.25em] text-white/20 px-4 mb-2 block">الموقف / الأفشة</label>
+                  <textarea
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    placeholder="اكتب الموقف اللي حصل..."
+                    className="w-full h-24 bg-black/20 border border-white/5 group-hover:border-white/10 focus:border-orange-500/50 rounded-[1.5rem] px-6 py-5 outline-none transition-all text-lg leading-relaxed placeholder:text-white/10 resize-none custom-scrollbar shadow-inner"
                   />
-                </motion.div>
-              )}
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-white/50 mb-3 ml-2">التاجات (افصل بفاصلة)</label>
-                <input
-                  value={tagsText}
-                  onChange={(e) => setTagsText(e.target.value)}
-                  className="w-full rounded-2xl px-5 py-4 bg-white/5 border border-white/10 outline-none focus:border-purple-500/50 focus:bg-white/10 transition text-sm"
-                  placeholder="جامعة, شغل, خروج..."
-                />
+                {mediaType !== 'text' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="space-y-4"
+                  >
+                    <label className="text-[10px] font-black uppercase tracking-[0.25em] text-white/20 px-4 block">ملف الميديا</label>
+                    <div className="relative group">
+                      <input
+                        type="file"
+                        accept={mediaType === 'image' ? "image/*" : "video/*"}
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            setMediaFile(e.target.files[0]);
+                          } else {
+                            setMediaFile(null);
+                          }
+                        }}
+                        className="w-full rounded-2xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-orange-500 file:text-white px-4 py-4 bg-black/20 border border-white/5 focus:border-orange-500/50 outline-none transition-all placeholder:text-white/10"
+                      />
+                    </div>
+
+                    {mediaType === 'image' && mediaFile && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="rounded-3xl overflow-hidden border border-white/10 h-48 bg-black/60 relative group"
+                      >
+                        <img 
+                          src={URL.createObjectURL(mediaFile)} 
+                          className="w-full h-full object-cover transition duration-500 group-hover:scale-110" 
+                          alt="Preview" 
+                          onLoad={() => URL.revokeObjectURL(URL.createObjectURL(mediaFile))} // basic cleanup, not perfect but helps memory
+                          onError={(e) => {
+                             setErr("عذراً، الملف غير صالح");
+                             e.currentTarget.src = "https://placehold.co/600x400/1A1D23/FFFFFF?text=%D8%A7%D9%84%D8%B5%D9%88%D8%B1%D8%A9+%D8%BA%D9%8A%D8%B1+%D9%85%D8%AA%D8%A7%D8%AD%D8%A9";
+                          }} 
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                        <span className="absolute bottom-4 left-4 text-[10px] font-black uppercase text-white/60">Preview</span>
+                      </motion.div>
+                    )}
+                  </motion.div>
+                )}
+
+                {/* Tags Input */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.25em] text-white/20 px-4 block">التاجات (افصل بفاصلة)</label>
+                  <div className="relative group">
+                    <input
+                      value={tagsText}
+                      onChange={(e) => setTagsText(e.target.value)}
+                      className="w-full rounded-xl px-5 py-4 bg-black/20 border border-white/5 group-hover:border-white/10 focus:border-orange-500/50 outline-none transition-all text-xs placeholder:text-white/10"
+                      placeholder="جامعة, شغل, خروج..."
+                    />
+                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-base opacity-20">🏷️</div>
+                  </div>
+                </div>
               </div>
 
               {err && (
-                <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium">
-                  ⚠️ {err}
-                </div>
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="p-5 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-xs font-bold flex items-center gap-4"
+                >
+                  <span className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center text-lg">⚠️</span>
+                  {err}
+                </motion.div>
               )}
 
               <button
                 onClick={submit}
                 disabled={loading}
-                className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-black py-5 shadow-2xl shadow-purple-600/30 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 relative overflow-hidden group"
+                className="w-full py-4 bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 rounded-2xl font-black text-lg shadow-[0_10px_30px_rgba(239,68,68,0.2)] hover:shadow-[0_15px_40px_rgba(239,68,68,0.3)] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 overflow-hidden relative group"
               >
-                <span className="relative z-10">{loading ? "جاري النشر..." : "نشر الأفشة الآن 🚀"}</span>
-                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition ease-in-out" />
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300" />
+                <div className="relative z-10 flex items-center justify-center gap-4 text-white">
+                  {loading ? (
+                    <div className="w-6 h-6 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <span>نشر الأفشة الآن</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>
+                    </>
+                  )}
+                </div>
               </button>
             </div>
+
+            {/* Fine decoration */}
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
           </motion.div>
         </div>
       )}

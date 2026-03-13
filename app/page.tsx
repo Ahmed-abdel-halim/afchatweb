@@ -20,7 +20,6 @@ interface Tag {
   id: number;
   name: string;
 }
-
 interface Punchline {
   id: number;
   text: string;
@@ -30,6 +29,8 @@ interface Punchline {
   user_name?: string;
   user_avatar?: string;
   user?: User;
+  media_type?: "text" | "image" | "video";
+  media_url?: string;
 }
 
 interface Setup {
@@ -38,6 +39,8 @@ interface Setup {
   slug: string;
   user: User;
   tags: Tag[];
+  media_type?: "text" | "image" | "video";
+  media_url?: string;
 }
 
 interface HistoryItem {
@@ -56,10 +59,11 @@ export default function Home() {
   const [loadingSetup, setLoadingSetup] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [openCreate, setOpenCreate] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false); // We'll sync this in useEffect to avoid SSR mismatches
   const [user, setUser] = useState<User | null>(null);
   const [laughing, setLaughing] = useState(false);
   const [openAddPunchline, setOpenAddPunchline] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const current = useMemo(() => punchlines[pIndex] ?? null, [punchlines, pIndex]);
 
@@ -98,230 +102,194 @@ export default function Home() {
   }, [buffer.length, nextCursor, loadingSetup, endReached]);
 
   async function loadNext() {
-    if (loadingSetup) return;
+    if (buffer.length > 0) {
+      const nextItem = buffer[0];
+      setBuffer(prev => prev.slice(1));
 
-    if (buffer.length === 0) {
-      if (endReached) return;
-      setLoadingSetup(true);
-      try {
-        const json = await getFeed(nextCursor ?? undefined);
-        if (json?.data) {
-          if (setup) setHistory(h => [...h, { setup, punchlines, cursor, pIndex }]);
-          setSetup(json.data.setup);
-          setPunchlines(json.data.punchlines ?? []);
-          setPIndex(0);
-          setCursor(json.next_cursor ?? null);
-          setNextCursor(json.next_cursor ?? null);
-        } else {
-          setEndReached(true);
-        }
-      } catch (e) {
-        console.error("Direct fetch failed", e);
-      } finally {
-        setLoadingSetup(false);
+      if (setup) {
+        setHistory((h) => [...h, { setup, punchlines, cursor, pIndex }]);
       }
+
+      setSetup(nextItem.setup);
+      setPunchlines(nextItem.punchlines);
+      setPIndex(0);
+      setCursor(nextItem.cursor);
       return;
     }
 
-    const nextItem = buffer[0];
-    setBuffer(prev => prev.slice(1));
+    if (loadingSetup || endReached) return;
 
-    if (setup) {
-      setHistory((h) => [...h, { setup, punchlines, cursor, pIndex }]);
+    setLoadingSetup(true);
+    try {
+      const json = await getFeed(nextCursor ?? undefined);
+      if (json?.data) {
+        if (setup) setHistory(h => [...h, { setup, punchlines, cursor, pIndex }]);
+        setSetup(json.data.setup);
+        setPunchlines(json.data.punchlines ?? []);
+        setPIndex(0);
+        setCursor(json.next_cursor ?? null);
+        setNextCursor(json.next_cursor ?? null);
+      } else {
+        setEndReached(true);
+      }
+    } catch (e) {
+      console.error("Direct fetch failed", e);
+    } finally {
+      setLoadingSetup(false);
     }
-
-    setSetup(nextItem.setup);
-    setPunchlines(nextItem.punchlines);
-    setPIndex(0);
-    setCursor(nextItem.cursor);
   }
 
   function loadPrev() {
     if (history.length === 0) return;
     const last = history[history.length - 1];
+    setHistory(h => h.slice(0, -1));
 
-    if (setup) {
-      setBuffer(prev => [{
-        setup,
-        punchlines,
-        cursor
-      }, ...prev]);
-    }
-
-    setHistory((h) => h.slice(0, -1));
     setSetup(last.setup);
-    setPunchlines(last.punchlines ?? []);
-    setPIndex(last.pIndex);
+    setPunchlines(last.punchlines);
     setCursor(last.cursor);
-    setEndReached(false);
+    setPIndex(last.pIndex);
   }
 
   useEffect(() => {
-    let lastScroll = 0;
-    const handleWheel = (e: WheelEvent) => {
-      const now = Date.now();
-      if (now - lastScroll < 1000) return;
-
-      if (e.deltaY > 50) {
-        loadNext();
-        lastScroll = now;
-      } else if (e.deltaY < -50) {
-        loadPrev();
-        lastScroll = now;
-      }
-    };
-    window.addEventListener('wheel', handleWheel);
-    return () => window.removeEventListener('wheel', handleWheel);
-  }, [buffer, setup, history, loadingSetup, endReached]);
-
-  useEffect(() => {
-    if (!setup && buffer.length > 0) {
-      loadNext();
-    }
-  }, [buffer, setup]);
-
-  useEffect(() => {
-    // Check for token on mount and fetch user if not already fetched
+    loadNext();
     const token = getToken();
-    if (token && !user) {
-      setLoggedIn(true);
-      getMe()
-        .then((res) => {
-          if (res?.user) {
-            setUser(res.user);
-          }
-        })
-        .catch(() => {
-          clearToken();
-          setLoggedIn(false);
-          setUser(null);
-        });
+    if (token) {
+      setLoggedIn(true); // Optimistically set to true if token exists
+      getMe().then(res => {
+        if (res && (res as any).user) {
+          setUser((res as any).user);
+        } else if (res) {
+          setUser(res as any);
+        }
+      }).catch(() => {
+        // Only clear if it's a real auth error, but for now let's be safe
+        // clearToken();
+        // setLoggedIn(false);
+      });
     }
-  }, [user]);
+  }, []);
 
-  const laugh = async () => {
-    if (!current) {
-      console.log("No punchline yet, cannot laugh.");
-      return;
+  useEffect(() => {
+    if (current?.id) {
+      postView(current.id);
     }
+  }, [current?.id]);
 
+  async function laugh() {
+    if (!current?.id) return;
     setLaughing(true);
-    setTimeout(() => setLaughing(false), 600);
 
-    const oldPunchlines = [...punchlines];
-    const target = { ...oldPunchlines[pIndex] };
-    target.laughs += 1;
-    target.strength = target.views > 0 ? target.laughs / target.views : 0;
-    oldPunchlines[pIndex] = target;
-    setPunchlines(oldPunchlines);
+    // End animation quickly so it can bounce again easily
+    setTimeout(() => setLaughing(false), 300);
+
+    // Optimistic Update
+    setPunchlines(prev => prev.map(p => {
+      if (p.id === current.id) {
+        const newLaughs = (p.laughs || 0) + 1;
+        const newViews = Math.max(p.views || 1, 1);
+        return {
+          ...p,
+          laughs: newLaughs,
+          strength: newLaughs / newViews
+        };
+      }
+      return p;
+    }));
 
     try {
       await postLaugh(current.id);
     } catch (e) {
-      console.error("Laugh failed", e);
+      // Could rollback here, but we'll ignore for likes
     }
-  };
+  }
 
-  useEffect(() => {
-    if (current?.id) {
-      postView(current.id).catch(() => { });
-    }
-  }, [current?.id]);
-
-  const nextP = () => setPIndex(i => Math.min(punchlines.length - 1, i + 1));
-  const prevP = () => setPIndex(i => Math.max(0, i - 1));
-
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const nextP = () => setPIndex(prev => (prev + 1) % (punchlines.length || 1));
+  const prevP = () => setPIndex(prev => (prev - 1 + (punchlines.length || 1)) % (punchlines.length || 1));
 
   return (
-    <div className="min-h-screen bg-[#0D0F14] text-white flex flex-col font-[family-name:var(--font-almarai)] selection:bg-purple-500/30 overflow-hidden">
+    <div className="min-h-screen bg-[#0D0F14] text-white flex flex-col font-[family-name:var(--font-almarai)] selection:bg-purple-500/30 overflow-hidden relative">
       {/* HEADER */}
-      <header className="flex items-center justify-between px-12 py-6 border-b border-white/5 bg-[#0D0F14]/80 backdrop-blur-xl z-[100] sticky top-0">
-        {/* Brand */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="w-10 h-10 bg-orange-400 rounded-xl flex items-center justify-center text-2xl font-black shadow-[0_0_20px_rgba(251,146,60,0.4)]">أ</div>
-          <h1 className="text-4xl font-black italic tracking-tighter bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent whitespace-nowrap">فشات</h1>
+      <header className="flex items-center justify-between px-12 py-6 z-[100] sticky top-0 bg-black/5 backdrop-blur-2xl border-b border-white/5">
+
+        {/* Left Side: Logo */}
+        <div className="flex items-center gap-4 w-1/4">
+          <div className="w-11 h-11 bg-gradient-to-tr from-orange-500 to-yellow-500 rounded-xl flex items-center justify-center text-2xl font-black text-white shadow-[0_10px_30px_rgba(249,115,22,0.2)] transform -rotate-3 hover:rotate-0 transition-transform">أ</div>
+          <h1 className="text-4xl font-black tracking-tighter text-white italic">فشات</h1>
         </div>
 
-        {/* Search */}
-        <div className="hidden md:flex relative w-1/3 group">
+        {/* Center: Search Bar */}
+        <div className="hidden md:flex relative w-1/2 max-w-[500px] group">
+          <div className="absolute left-5 top-1/2 -translate-y-1/2 text-base opacity-20 pointer-events-none group-focus-within:opacity-40 transition-opacity">
+            🔍
+          </div>
           <input
             type="text"
             placeholder="ابحث عن مواقف، تريندات، أو أشخاص..."
-            className="w-full bg-white/5 border border-white/10 rounded-2xl px-12 py-3.5 outline-none focus:border-purple-500/50 focus:bg-white/10 transition text-center backdrop-blur-md"
+            className="w-full bg-[#161922] border border-white/5 rounded-2xl px-12 py-3 outline-none focus:border-white/10 transition-all text-center text-[13px] text-white/80 placeholder:text-white/20"
           />
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-purple-400 transition">🔍</span>
         </div>
 
-        {/* User Actions (Reversed as requested) */}
-        <div className="flex items-center gap-4 relative">
-          {/* Notifications Circular Button */}
-          <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center cursor-pointer hover:bg-white/10 transition group relative">
-            <span className="text-xl opacity-60 group-hover:opacity-100 transition">🔔</span>
-            <div className="absolute top-3 right-3 w-2.5 h-2.5 bg-[#E91E63] rounded-full border-2 border-[#0D0F14]" />
-          </div>
-
+        {/* Right Side: Profile & Notifications */}
+        <div className="flex items-center gap-6 w-1/4 justify-end">
           {loggedIn ? (
-            <div className="relative">
-              {/* User Pill Badge */}
-              <div
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                className="h-12 pl-4 pr-1.5 rounded-full bg-white/5 border border-white/10 flex items-center gap-3 cursor-pointer hover:bg-white/10 transition select-none group"
-              >
-                {/* Chevron */}
-                <span className={`text-[10px] text-white/20 group-hover:text-white/40 transition-transform duration-300 ${showUserMenu ? 'rotate-180' : ''}`}>▼</span>
+            <>
+              <div className="w-11 h-11 rounded-full bg-[#1A1D23]/40 border border-white/10 flex items-center justify-center cursor-pointer hover:bg-white/10 transition text-xl relative shadow-sm">
+                🔔
+                <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-pink-500 rounded-full border-2 border-[#0D0F14]" />
+              </div>
 
-                {/* Info */}
-                <div className="flex flex-col text-left">
-                  <span className="text-sm font-black tracking-tight leading-tight">
-                    {user?.name || user?.email?.split('@')[0] || "مستخدم جديد"}
-                  </span>
-                  <div className="flex items-center gap-1 opacity-40">
-                    <span className="text-[9px] font-bold uppercase tracking-wider">Level 5 Joker</span>
-                    <span className="text-[10px]">🃏</span>
+              <div className="relative">
+                <div
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="h-11 pl-4 pr-2 bg-[#1A1D23]/40 border border-white/10 rounded-full flex items-center gap-3 cursor-pointer hover:bg-white/10 transition-all select-none group"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-20 group-hover:opacity-100 transition-opacity"><path d="m6 9 6 6 6-6" /></svg>
+                  <div className="flex flex-col text-right">
+                    <span className="text-[11px] font-black leading-tight text-white">{user?.name || "المستخدم"}</span>
+                    <span className="text-[8px] opacity-40 font-black uppercase tracking-tighter">عضو جديد</span>
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-0.5 relative">
+                    <img
+                      src={user?.avatar || `https://api.dicebear.com/9.x/bottts/svg?seed=${user?.email || 'afshat'}`}
+                      className="w-full h-full rounded-full object-cover bg-[#0D0F14]"
+                    />
+                    <div className="absolute -bottom-0.5 -left-0.5 w-3 h-3 bg-green-500 border-2 border-[#0D0F14] rounded-full" />
                   </div>
                 </div>
 
-                {/* Avatar with Blue Border */}
-                <div className="relative">
-                  <img
-                    src={user?.avatar || `https://api.dicebear.com/9.x/bottts/svg?seed=${user?.email || 'afshat'}`}
-                    className="w-9 h-9 rounded-full border-2 border-blue-500 bg-white/10 p-0.5 object-cover"
-                  />
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-[#0D0F14] rounded-full" />
-                </div>
+                <AnimatePresence>
+                  {showUserMenu && (
+                    <>
+                      <div className="fixed inset-0 z-[105]" onClick={() => setShowUserMenu(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute top-full right-0 mt-4 w-48 bg-[#1A1D23] border border-white/10 rounded-2xl shadow-2xl p-2 z-[110] backdrop-blur-xl"
+                      >
+                        <button
+                          onClick={() => {
+                            clearToken();
+                            setLoggedIn(false);
+                            setUser(null);
+                            setShowUserMenu(false);
+                            router.push("/login");
+                          }}
+                          className="w-full px-4 py-3 rounded-xl flex items-center justify-between hover:bg-red-500/10 text-red-500 transition font-bold text-sm"
+                        >
+                          <span dir="rtl">تسجيل الخروج</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                        </button>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
               </div>
-
-              {/* Dropdown Menu */}
-              <AnimatePresence>
-                {showUserMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute top-14 left-0 w-48 bg-[#1A1D23] border border-white/10 rounded-2xl shadow-2xl p-2 z-[110] backdrop-blur-xl"
-                  >
-                    <button
-                      onClick={() => {
-                        clearToken();
-                        setLoggedIn(false);
-                        setUser(null);
-                        setShowUserMenu(false);
-                        router.refresh();
-                      }}
-                      className="w-full px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-red-500/10 text-red-500 transition font-bold text-sm"
-                    >
-                      <span className="text-lg">تسجيل الخروج</span>
-                      <span className="text-base text-red-500">🚪</span>
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            </>
           ) : (
             <button
               onClick={() => router.push("/login")}
-              className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-black text-sm shadow-lg shadow-purple-500/20 active:scale-95 transition"
+              className="px-6 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 active:scale-95 transition rounded-xl text-sm font-bold shadow-lg shadow-purple-500/20"
             >
               تسجيل الدخول
             </button>
@@ -329,217 +297,245 @@ export default function Home() {
         </div>
       </header>
 
-      {/* MAIN CONTENT AREA */}
-      <main className="flex flex-col px-8 pb-40 pt-4 relative">
-        <div className="relative w-full max-w-[1400px] mx-auto">
-          {/* THE BIG BOX */}
-          <div className="w-full h-[78vh] grid grid-cols-1 md:grid-cols-2 gap-0 overflow-hidden rounded-[40px] border border-white/10 shadow-2xl relative">
+      <main className="flex grow items-center justify-center px-8 relative">
+        <div className="relative w-full max-w-[1400px]">
+          <div className="w-full h-[78vh] grid grid-cols-1 md:grid-cols-2 gap-0 overflow-hidden rounded-[3rem] border border-white/5 shadow-2xl relative">
 
-            {/* FIRST CHILD (Right in RTL): THE PUNCHLINE */}
-            <div className="relative bg-gradient-to-br from-[#7B42F6] via-[#B068F9] to-[#E91E63] flex flex-col justify-center px-12 pt-16 pb-24 overflow-hidden border-r border-white/5 group">
-              {/* Shine effect */}
-              <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:250%_250%] animate-[shimmer_5s_infinite] pointer-events-none" />
-
-              {/* Status Bar */}
-              <div className="absolute top-8 left-8 right-8 flex items-center justify-between z-30">
-                <button
-                  onClick={() => loggedIn ? setOpenAddPunchline(true) : router.push("/login")}
-                  className="px-4 py-1.5 bg-white/10 hover:bg-[#E91E63] border border-white/10 backdrop-blur-md rounded-xl text-[10px] font-black tracking-widest uppercase transition-all flex items-center gap-2 group/btn"
-                >
-                  <span className="group-hover/btn:rotate-90 transition-transform">➕</span>
-                  أضف رد مضحك
-                </button>
-                <div className="px-4 py-1.5 bg-black/20 backdrop-blur-md rounded-xl text-[10px] font-black tracking-widest uppercase border border-white/10">
+            {/* PUNCHLINE PANE (Left Side) */}
+            <div className="bg-gradient-to-br from-[#7B42F6] to-[#E91E63] relative flex flex-col justify-center px-12 pt-16 pb-24 overflow-hidden order-1 border-r border-white/5">
+              <div className="absolute top-10 left-10 z-30">
+                <div className="px-4 py-1.5 bg-black/20 backdrop-blur-md rounded-xl text-[11px] font-bold border border-white/5 text-white/60 uppercase tracking-widest">
                   الرد {pIndex + 1}/{punchlines.length || 1}
                 </div>
               </div>
 
-              {/* Reactions Right (Floating) */}
-              <div className="absolute right-8 top-1/2 -translate-y-1/2 flex flex-col items-center gap-10 z-40">
-                <button onClick={laugh} className="flex flex-col items-center group/react active:scale-95 transition">
-                  <motion.div
-                    animate={laughing ? { scale: [1, 1.4, 1], rotate: [0, 15, -15, 0] } : {}}
-                    className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl group-hover/react:scale-125 transition"
+              <div className="absolute top-10 right-10 z-30">
+                <button
+                  onClick={() => (loggedIn || getToken()) ? setOpenAddPunchline(true) : router.push("/login")}
+                  className="px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-md rounded-2xl text-xs font-bold transition-all flex items-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-60"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
+                  أضف رد مضحك
+                </button>
+              </div>
+
+              {/* Reactions */}
+              <div className="absolute right-10 top-1/2 -translate-y-2/3 flex flex-col items-center gap-10 z-40">
+                <div className="flex flex-col items-center gap-1 group">
+                  <div
+                    onClick={laugh}
+                    className="w-14 h-14 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl flex items-center justify-center text-3xl cursor-pointer hover:bg-white/20 hover:scale-110 active:scale-95 transition-all select-none shadow-xl"
                   >
                     😂
-                  </motion.div>
-                  <span className="text-xs font-black mt-2 opacity-80">{current?.laughs?.toLocaleString() || 0}</span>
-                </button>
-
-                <div className="flex flex-col items-center">
-                  <div className="w-14 h-14 bg-orange-500 rounded-2xl flex items-center justify-center text-3xl shadow-[0_10px_20px_rgba(249,115,22,0.4)]">🔥</div>
-                  <span className="text-xs font-black mt-2 opacity-80">{current ? Math.round((current.strength ?? 0) * 100) : 0}%</span>
+                  </div>
+                  <span className="text-xs font-bold opacity-60 tracking-wider mt-1">{current?.laughs || 0}</span>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <div className="w-14 h-14 bg-orange-500 rounded-2xl flex items-center justify-center text-3xl shadow-lg">🔥</div>
+                  <span className="text-xs font-bold opacity-60 tracking-wider mt-1">{current ? Math.round((current.strength ?? 0) * 100) : 0}%</span>
                 </div>
               </div>
 
               <AnimatePresence mode="wait">
                 <motion.div
                   key={current?.id || 'loading'}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.05 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   className="relative z-10 text-center flex flex-col items-center px-24"
                 >
-                  <div className="flex items-center gap-3 mb-6 opacity-60">
-                    <span className="w-6 h-[1px] bg-white/20" />
+                  <div className="flex items-center gap-3 mb-6 opacity-40">
+                    <span className="w-8 h-[1px] bg-white" />
                     <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold tracking-tight">
+                        الرد من: {current?.user?.name || current?.user_name || "Ahmed abdelhalim"}
+                      </span>
                       <img
                         src={current?.user_avatar || current?.user?.avatar || `https://api.dicebear.com/9.x/bottts/svg?seed=${current?.id || 'punch'}`}
-                        className="w-5 h-5 rounded-full bg-white/10"
+                        className="w-5 h-5 rounded-full bg-white/10 object-cover"
                         alt="avatar"
                       />
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-                        الرد من: {current?.user_name || current?.user?.name || current?.user?.email?.split('@')[0] || "مجهول"}
-                      </span>
                     </div>
-                    <span className="w-6 h-[1px] bg-white/20" />
+                    <span className="w-8 h-[1px] bg-white" />
                   </div>
-                  <h2 className="text-5xl font-black leading-[1.3] text-white drop-shadow-2xl">
-                    {current?.text || "اسحب يمين أو شمال للمزيد..."}
-                  </h2>
+                  {current?.media_type === "image" && current?.media_url && (
+                    <div className="mb-6 w-full max-w-sm rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black/40 flex items-center justify-center min-h-[100px]">
+                      <img
+                        src={current.media_url}
+                        className="w-full h-auto object-cover max-h-[30vh]"
+                        alt="punchline media"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://placehold.co/600x400/1A1D23/FFFFFF?text=%D8%A7%D9%84%D8%B5%D9%88%D8%B1%D8%A9+%D8%BA%D9%8A%D8%B1+%D9%85%D8%AA%D8%A7%D8%AD%D8%A9";
+                        }}
+                      />
+                    </div>
+                  )}
 
-                  {/* Local Nav Arrows */}
-                  <div className="flex items-center gap-8 mt-24 bg-white/10 backdrop-blur-xl p-2.5 rounded-full border border-white/20 shadow-2xl">
-                    <button onClick={prevP} className="w-14 h-14 rounded-full flex items-center justify-center bg-black/30 hover:bg-black/50 transition group/arr shadow-lg">
-                      <span className="text-2xl text-white transition group-hover/arr:-translate-x-1">→</span>
+                  {current?.text ? (
+                    <h2 className="text-5xl font-bold leading-tight text-white mb-20">
+                      {current.text}
+                    </h2>
+                  ) : current?.media_type !== 'image' ? (
+                    <h2 className="text-5xl font-bold leading-tight text-white mb-20 opacity-50">
+                      اسحب يمين أو شمال للمزيد...
+                    </h2>
+                  ) : null}
+
+                  <div className="absolute bottom-[-100px] flex items-center gap-8 glass px-8 py-3 rounded-full border border-white/10 shadow-xl backdrop-blur-xl">
+                    <button onClick={prevP} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition">
+                      <span className="text-xl">→</span>
                     </button>
-                    <span className="text-sm font-black text-white px-2 tracking-tight">تصفح الردود</span>
-                    <button onClick={nextP} className="w-14 h-14 rounded-full flex items-center justify-center bg-black/30 hover:bg-black/50 transition group/arr shadow-lg">
-                      <span className="text-2xl text-white transition group-hover/arr:translate-x-1">←</span>
+                    <span className="text-sm font-bold tracking-tight">تصفح الردود</span>
+                    <button onClick={nextP} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition">
+                      <span className="text-xl">←</span>
                     </button>
                   </div>
                 </motion.div>
               </AnimatePresence>
             </div>
 
-            {/* SECOND CHILD (Left in RTL): THE SETUP */}
-            <div className="bg-[#0A1A3B] relative flex flex-col justify-center px-12 pt-16 pb-24 overflow-hidden border-l border-white/5 group">
-              <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_20%_20%,#3b82f6_0,transparent_50%)]" />
-
-              {/* Dynamic Tag Badges */}
-              <div className="absolute top-8 right-8 flex flex-col items-end gap-2 z-30">
-                {setup?.tags?.map((tag: any) => (
-                  <motion.span
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    key={tag.id}
-                    className="px-3 py-1.5 bg-white/5 text-white/70 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-2 backdrop-blur-md shadow-lg"
-                  >
-                    <span className="w-2 h-2 bg-purple-500 rounded-full shadow-[0_0_8px_rgba(168,85,247,0.6)]" />
-                    {tag.name}
-                  </motion.span>
-                ))}
-              </div>
-
-              {/* Float Button: Create */}
+            {/* SETUP PANE (Right Side) */}
+            <div className="bg-gradient-to-br from-[#0EA5E9] to-[#0284C7] relative flex flex-col justify-center px-12 pt-16 pb-24 overflow-hidden order-2 group">
               <button
-                onClick={() => loggedIn ? setOpenCreate(true) : router.push("/login")}
-                className="absolute top-8 left-8 bg-[#E91E63] hover:scale-105 active:scale-95 transition shadow-[0_8px_20px_rgba(233,30,99,0.4)] px-5 py-2.5 rounded-2xl flex items-center gap-2 font-black text-sm z-30"
+                onClick={() => (loggedIn || getToken()) ? setOpenCreate(true) : router.push("/login")}
+                className="absolute top-10 left-10 bg-gradient-to-r from-[#FF0080] to-[#E91E63] hover:scale-105 active:scale-95 transition shadow-[0_0_20px_rgba(233,30,99,0.3)] px-6 py-2.5 rounded-2xl flex items-center gap-2 font-bold text-sm z-30 text-white"
               >
-                عندك أفشة؟ 🎙️
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
+                عندك أفشة؟
               </button>
 
-              {/* Vertical Arrows */}
-              <div className="absolute right-8 top-1/2 -translate-y-1/2 flex flex-col gap-5 z-[60] group-hover:opacity-100 transition-all">
+              <div className="absolute top-10 right-10 flex flex-col items-end gap-2 z-30">
+                {setup?.tags && setup.tags.length > 0 ? (
+                  setup.tags.map((tag, i) => (
+                    <span key={tag.id} className="px-4 py-1.5 bg-white/20 text-white font-bold border border-white/20 rounded-full text-[11px] flex items-center gap-2 backdrop-blur-md shadow-sm drop-shadow-md">
+                      {tag.name}
+                      <span className={`w-2 h-2 rounded-full ${['bg-purple-500', 'bg-blue-500', 'bg-pink-500', 'bg-yellow-500', 'bg-green-500'][i % 5]}`} />
+                    </span>
+                  ))
+                ) : (
+                  <>
+                    <span className="px-4 py-1.5 bg-white/20 text-white font-bold border border-white/20 rounded-full text-[11px] flex items-center gap-2 backdrop-blur-md shadow-sm drop-shadow-md">
+                      الشغل
+                      <span className="w-2 h-2 bg-purple-500 rounded-full" />
+                    </span>
+                    <span className="px-4 py-1.5 bg-white/20 text-white font-bold border border-white/20 rounded-full text-[11px] flex items-center gap-2 backdrop-blur-md shadow-sm drop-shadow-md">
+                      الشركة
+                      <span className="w-2 h-2 bg-blue-500 rounded-full" />
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {/* Navigation Arrows */}
+              <div className="absolute right-10 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-40">
                 <button
                   onClick={(e) => { e.stopPropagation(); loadPrev(); }}
                   disabled={history.length === 0}
-                  className={`w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center transition-all shadow-xl backdrop-blur-md active:scale-95 ${history.length === 0 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#E91E63] hover:border-[#E91E63]/50'}`}
-                  title={history.length === 0 ? "أنت في أول قفشة" : "السابق"}
+                  className="w-12 h-12 bg-white/10 border border-white/5 rounded-xl flex items-center justify-center hover:bg-white/20 transition disabled:opacity-20 backdrop-blur-md"
                 >
-                  <span className="text-2xl transition-all duration-300">
-                    {history.length === 0 ? "🔝" : "↑"}
-                  </span>
+                  <span className="text-xl shadow-sm">↑</span>
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); loadNext(); }}
-                  disabled={loadingSetup || (endReached && buffer.length === 0)}
-                  className={`w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center transition-all shadow-xl backdrop-blur-md active:scale-95 ${(endReached && buffer.length === 0) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#E91E63] hover:border-[#E91E63]/50'}`}
-                  title={(endReached && buffer.length === 0) ? "وصلت للنهاية" : "التالي"}
+                  disabled={(loadingSetup && buffer.length === 0) || (endReached && buffer.length === 0)}
+                  className="w-12 h-12 bg-white/10 border border-white/5 rounded-xl flex items-center justify-center hover:bg-white/20 transition disabled:opacity-20 backdrop-blur-md"
                 >
-                  <span className="text-2xl transition-all duration-300">
-                    {loadingSetup ? "..." : (endReached && buffer.length === 0) ? "🔚" : "↓"}
-                  </span>
+                  <span className="text-xl shadow-sm">↓</span>
                 </button>
               </div>
 
               <AnimatePresence mode="wait">
                 <motion.div
                   key={setup?.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className="relative z-10 text-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="relative z-10 text-center flex flex-col items-center"
                 >
-                  <div className="flex items-center justify-center gap-3 mb-6 opacity-60">
-                    <span className="w-8 h-[1px] bg-white/20" />
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-center gap-2 mb-8">
+                    <div className="flex items-center gap-3 opacity-40">
+                      <span className="w-8 h-[1px] bg-white" />
                       <img
-                        src={setup?.user?.avatar || `https://api.dicebear.com/9.x/bottts/svg?seed=${setup?.user?.email || 'user'}`}
+                        src={setup?.user?.avatar || `https://api.dicebear.com/9.x/bottts/svg?seed=${setup?.user?.id || 'admin'}`}
                         className="w-5 h-5 rounded-full bg-white/10"
-                        alt="avatar"
                       />
-                      <span className="text-sm font-bold tracking-tight">
-                        {setup?.user?.name || setup?.user?.email?.split('@')[0] || "مجهول"}
-                      </span>
+                      <span className="text-xs font-bold tracking-tight">{setup?.user?.name || "Ahmed abdelhalim"}</span>
+                      <span className="w-8 h-[1px] bg-white" />
                     </div>
-                    <span className="w-8 h-[1px] bg-white/20" />
                   </div>
-                  <h2 className="text-5xl font-black leading-[1.3] text-white drop-shadow-lg px-4">
-                    {setup?.text || "جاري التحميل..."}
-                  </h2>
+
+                  {setup?.media_type === "image" && setup?.media_url && (
+                    <div className="mb-6 w-full max-w-sm rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black/40 flex items-center justify-center min-h-[100px]">
+                      <img
+                        src={setup.media_url}
+                        className="w-full h-auto object-cover max-h-[40vh]"
+                        alt="setup media"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://placehold.co/600x400/1A1D23/FFFFFF?text=%D8%A7%D9%84%D8%B5%D9%88%D8%B1%D8%A9+%D8%BA%D9%8A%D8%B1+%D9%85%D8%AA%D8%A7%D8%AD%D8%A9";
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {setup?.text ? (
+                    <h2 className="text-5xl font-bold leading-tight text-white mb-6">
+                      {setup.text}
+                    </h2>
+                  ) : !setup ? (
+                    <h2 className="text-5xl font-bold leading-tight text-white mb-6 opacity-50">
+                      ...جاري التحميل
+                    </h2>
+                  ) : null}
                 </motion.div>
               </AnimatePresence>
             </div>
+
           </div>
 
-          {/* BOTTOM ACTION BAR */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 flex items-center gap-6 z-50">
-            <div className="flex items-center gap-4 bg-black/60 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-3 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-              <button className="w-14 h-14 flex items-center justify-center hover:bg-white/5 rounded-full text-2xl transition">💬</button>
-              <div className="relative group">
-                <div className="absolute -inset-2 bg-yellow-400/20 blur-xl opacity-0 group-hover:opacity-100 transition rounded-full" />
-                <button
-                  onClick={laugh}
-                  className="w-20 h-20 bg-gradient-to-tr from-yellow-300 to-yellow-500 rounded-full flex items-center justify-center shadow-[0_12px_40px_rgba(234,179,8,0.5)] active:scale-95 transition-transform duration-100 border-4 border-[#0D0F14] relative z-10"
-                >
-                  <motion.span
-                    animate={laughing ? { scale: [1, 1.6, 1], rotate: [0, 20, -20, 0] } : {}}
-                    transition={{ duration: 0.4 }}
-                    className="text-5xl"
+          <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[150]">
+            <div className="relative group">
+              {/* Background Glow */}
+              <div className="absolute inset-0 bg-yellow-500/10 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition duration-1000" />
+
+              <div className="relative flex items-center gap-8 bg-[#0D0F14]/80 backdrop-blur-2xl px-8 py-2.5 rounded-[2rem] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] min-w-[280px] justify-between transition-all duration-500 group-hover:border-white/20">
+
+                {/* Link Option */}
+                <button className="relative flex flex-col items-center gap-1 text-white/40 hover:text-white transition group/btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
+                </button>
+
+                {/* Main Laughter Button */}
+                <div className="relative">
+                  <motion.div
+                    animate={laughing ? { scale: [1, 1.3, 1] } : {}}
+                    onClick={laugh}
+                    className="w-14 h-14 bg-gradient-to-tr from-[#FFD600] to-[#FFE500] rounded-full flex items-center justify-center text-3xl shadow-[0_8px_20px_rgba(255,214,0,0.3)] border-[3px] border-[#0D0F14] cursor-pointer hover:scale-110 active:scale-90 transition-all duration-300 z-10 relative"
                   >
                     😂
-                  </motion.span>
+                    {laughing && (
+                      <motion.div
+                        initial={{ opacity: 1, scale: 0.5 }}
+                        animate={{ opacity: 0, scale: 2 }}
+                        className="absolute inset-0 bg-yellow-400 rounded-full"
+                      />
+                    )}
+                  </motion.div>
+                </div>
+
+                {/* Comment Option */}
+                <button className="relative flex flex-col items-center gap-1 text-white/40 hover:text-white transition group/btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                 </button>
+
               </div>
-              <button className="w-14 h-14 flex items-center justify-center hover:bg-white/5 rounded-full text-2xl transition">🔗</button>
             </div>
           </div>
         </div>
       </main>
 
-      <CreateSetupModal
-        open={openCreate}
-        onClose={() => setOpenCreate(false)}
-        onCreated={() => { setOpenCreate(false); loadNext(); }}
-      />
-
-      <AddPunchlineModal
-        open={openAddPunchline}
-        setupId={setup?.id || 0}
-        onClose={() => setOpenAddPunchline(false)}
-        onCreated={(newP) => {
-          setPunchlines(prev => [...prev, newP]);
-          setPIndex(punchlines.length);
-        }}
-      />
-
-      <style jsx global>{`
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-      `}</style>
+      {/* Modals */}
+      <CreateSetupModal open={openCreate} onClose={() => setOpenCreate(false)} onCreated={() => { setOpenCreate(false); loadNext(); }} />
+      <AddPunchlineModal open={openAddPunchline} setupId={setup?.id || 0} onClose={() => setOpenAddPunchline(false)} onCreated={(newP) => { setPunchlines(prev => [...prev, newP]); setPIndex(punchlines.length); }} />
     </div>
   );
 }
