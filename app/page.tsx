@@ -531,12 +531,12 @@ export default function Home() {
 
           </div>
 
-          <div className="hidden md:flex fixed bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xs md:max-w-[1750px] justify-center px-4 md:px-0">
+          <div className="hidden md:flex fixed bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xs md:max-w-[1750px] justify-center px-4 md:px-0 pointer-events-none">
             <div className="relative group w-full flex justify-center">
               {/* Background Glow for Center Button */}
               <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 bg-yellow-500/10 blur-3xl rounded-full pointer-events-none" />
 
-              <div className="relative flex items-center bg-black/60 backdrop-blur-2xl px-1 h-16 rounded-full border border-white/10 shadow-2xl min-w-[220px] md:min-w-[240px] transition-all duration-500 hover:border-white/20">
+              <div className="relative flex items-center bg-black/60 backdrop-blur-2xl px-1 h-16 rounded-full border border-white/10 shadow-2xl min-w-[220px] md:min-w-[240px] transition-all duration-500 hover:border-white/20 pointer-events-auto">
 
                 {/* Comments Option (Left) */}
                 <div className="flex-1 flex justify-center">
