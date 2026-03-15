@@ -324,12 +324,12 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex grow items-center justify-center px-0 md:px-6 py-0 md:py-4 relative">
-        <div className="relative w-full max-w-[1750px] h-full flex items-center justify-center">
-          <div className="w-full h-full md:h-[85vh] grid grid-cols-1 md:grid-cols-2 gap-0 overflow-hidden md:rounded-[2.5rem] md:border md:border-white/5 md:shadow-2xl relative bg-transparent md:bg-black/20">
+      <main className="flex grow items-stretch md:items-center justify-center px-0 md:px-6 py-0 md:py-4 relative">
+        <div className="relative w-full max-w-[1750px] h-full flex flex-col md:flex-row items-stretch md:items-center justify-center">
+          <div className="w-full h-full md:h-[85vh] flex flex-col md:grid md:grid-cols-2 gap-0 overflow-hidden md:rounded-[2.5rem] md:border md:border-white/5 md:shadow-2xl relative bg-transparent md:bg-black/20">
 
             {/* PUNCHLINE PANE (Bottom on mobile) */}
-            <div className="bg-gradient-to-br from-[#A855F7]/80 via-[#D946EF]/80 to-[#EC4899]/80 md:bg-gradient-to-br md:from-[#A855F7] md:via-[#D946EF] md:to-[#EC4899] relative flex flex-col justify-center px-6 md:px-12 pt-0 md:pt-16 pb-0 md:pb-24 overflow-hidden order-2 md:order-1 md:border-r md:border-white/10 shadow-inner">
+            <div className="bg-gradient-to-br from-[#A855F7]/80 via-[#D946EF]/80 to-[#EC4899]/80 md:bg-gradient-to-br md:from-[#A855F7] md:via-[#D946EF] md:to-[#EC4899] relative flex flex-col justify-center px-6 md:px-12 pt-12 md:pt-16 pb-12 md:pb-24 overflow-hidden order-2 md:order-1 md:border-r md:border-white/10 shadow-inner flex-1">
               {/* Shine/Glow Effect */}
               <div className="absolute -top-10 -right-10 w-[500px] h-[500px] bg-white/30 blur-[120px] rounded-full pointer-events-none opacity-50" />
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.1),_transparent_70%)] pointer-events-none" />
@@ -338,7 +338,7 @@ export default function Home() {
                 <div className="px-3 md:px-4 py-1.5 bg-black/20 backdrop-blur-md rounded-xl text-[10px] md:text-[11px] font-bold border border-white/5 text-white/40 uppercase tracking-widest h-10 md:h-11 flex items-center">
                   الرد {pIndex + 1}/{punchlines.length || 1}
                 </div>
-                
+
                 <button
                   onClick={() => (loggedIn || getToken()) ? setOpenAddPunchline(true) : router.push("/login")}
                   className="w-10 h-10 md:w-auto md:px-5 md:py-2.5 bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-md rounded-xl flex items-center justify-center md:gap-2 transition-all"
@@ -351,7 +351,7 @@ export default function Home() {
 
               {/* Reactions - TikTok Style Sidebar */}
               <div className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 md:gap-5 z-[60]">
-                
+
                 {/* Laugh */}
                 <div className="flex flex-col items-center group">
                   <motion.div
@@ -364,7 +364,7 @@ export default function Home() {
                   </motion.div>
                   <span className="text-[11px] md:text-sm font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] -mt-1">{current?.laughs || 0}</span>
                 </div>
-                
+
                 {/* Strength */}
                 <div className="flex flex-col items-center group">
                   <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center text-3xl md:text-4xl cursor-pointer transition-all">
@@ -383,7 +383,7 @@ export default function Home() {
                 {/* Comments - Mobile Only Sidebar */}
                 <div className="flex flex-col items-center group md:hidden">
                   <button className="w-12 h-12 flex items-center justify-center text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] hover:text-white/80 transition-all active:scale-90">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                   </button>
                 </div>
 
@@ -435,28 +435,28 @@ export default function Home() {
                   )}
 
                   <div className="absolute left-1/2 -translate-x-1/2 bottom-[-125px] md:bottom-[-160px] flex items-center gap-4 md:gap-6 z-40 md:relative md:bottom-0 md:mt-12 md:left-auto md:translate-x-0">
-                     <div className="flex items-center gap-4">
-                        <button
-                          onClick={prevP}
-                          className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white/40 hover:bg-white/20 transition-all backdrop-blur-md"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="rotate-180 md:rotate-0"><path d="m9 18 6-6-6-6" /></svg>
-                        </button>
-                        <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white/30 hidden md:inline">تصفح الردود</span>
-                        <button
-                          onClick={nextP}
-                          className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white/40 hover:bg-white/20 transition-all backdrop-blur-md"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="rotate-180 md:rotate-0"><path d="m15 18-6-6 6-6" /></svg>
-                        </button>
-                     </div>
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={prevP}
+                        className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white/40 hover:bg-white/20 transition-all backdrop-blur-md"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="rotate-180 md:rotate-0"><path d="m9 18 6-6-6-6" /></svg>
+                      </button>
+                      <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white/30 hidden md:inline">تصفح الردود</span>
+                      <button
+                        onClick={nextP}
+                        className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white/40 hover:bg-white/20 transition-all backdrop-blur-md"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="rotate-180 md:rotate-0"><path d="m15 18-6-6 6-6" /></svg>
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               </AnimatePresence>
             </div>
 
             {/* SETUP PANE (Top on mobile) */}
-            <div className="bg-[#2E1065] md:bg-gradient-to-br md:from-[#4C1D95] md:via-[#2E1065] md:to-[#1E1B4B] relative flex flex-col justify-center px-6 md:px-12 pt-0 md:pt-16 pb-0 md:pb-24 overflow-hidden order-1 md:order-2 md:border-l md:border-white/5 shadow-2xl md:shadow-none">
+            <div className="bg-[#2E1065] md:bg-gradient-to-br md:from-[#4C1D95] md:via-[#2E1065] md:to-[#1E1B4B] relative flex flex-col justify-center px-6 md:px-12 pt-12 md:pt-16 pb-12 md:pb-24 overflow-hidden order-1 md:order-2 md:border-l md:border-white/5 shadow-2xl md:shadow-none flex-1">
               {/* Shine/Glow Effect */}
               <div className="absolute -top-20 -left-20 w-[400px] h-[400px] bg-purple-500/20 blur-[100px] rounded-full pointer-events-none" />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,_rgba(255,255,255,0.05),_transparent_60%)] pointer-events-none" />
@@ -470,7 +470,7 @@ export default function Home() {
               </button>
 
               {/* Navigation Arrows - Centered horizontally at the bottom on mobile */}
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-0 md:left-auto md:translate-x-0 md:right-10 md:top-1/2 md:bottom-auto md:-translate-y-1/2 flex md:flex-col gap-3 md:gap-4 z-40">
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-2 md:left-auto md:translate-x-0 md:right-10 md:top-1/2 md:bottom-auto md:-translate-y-1/2 flex md:flex-col gap-3 md:gap-4 z-40">
                 <button
                   onClick={(e) => { e.stopPropagation(); loadPrev(); }}
                   className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white/20 hover:text-white/60 hover:bg-white/15 transition-all backdrop-blur-md"
@@ -541,7 +541,7 @@ export default function Home() {
                 {/* Comments Option (Left) */}
                 <div className="flex-1 flex justify-center">
                   <button className="w-11 h-11 rounded-full border border-white/5 flex items-center justify-center text-white/20 hover:text-white/60 transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                   </button>
                 </div>
 
