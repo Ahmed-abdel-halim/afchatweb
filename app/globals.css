@@ -3,20 +3,23 @@
 :root {
   --background: #0D0F14;
   --foreground: #ffffff;
+  --main-gradient: linear-gradient(to bottom right, #a78bfa, #f472b6);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-almarai), var(--font-geist-sans);
+  --font-sans: var(--font-readex-pro), var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
+  background: var(--main-gradient);
+  background-attachment: fixed;
   color: var(--foreground);
-  font-family: var(--font-almarai), system-ui, sans-serif;
+  font-family: var(--font-readex-pro), system-ui, sans-serif;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
 /* Custom Scrollbar */

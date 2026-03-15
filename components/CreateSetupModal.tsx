@@ -66,32 +66,32 @@ export default function CreateSetupModal({ open, onClose, onCreated }: Props) {
             initial={{ opacity: 0, scale: 0.95, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 30 }}
-            className="relative w-full max-w-lg bg-[#161922] border border-white/10 rounded-[2.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.6)] overflow-hidden"
+            className="relative w-full max-w-lg bg-[#161922] border border-white/10 rounded-[2rem] shadow-[0_40px_100px_rgba(0,0,0,0.6)] overflow-hidden"
           >
             {/* Ambient Background Glows */}
-            <div className="absolute -top-24 -left-24 w-60 h-60 bg-orange-600/10 blur-[100px] rounded-full" />
-            <div className="absolute -bottom-24 -right-24 w-60 h-60 bg-pink-600/10 blur-[100px] rounded-full" />
+            <div className="absolute -top-24 -left-24 w-60 h-60 bg-purple-600/10 blur-[100px] rounded-full" />
+            <div className="absolute -bottom-24 -right-24 w-60 h-60 bg-blue-600/10 blur-[100px] rounded-full" />
 
             {/* Header Section */}
-            <div className="relative p-6 pb-4 border-b border-white/5">
+            <div className="relative p-3 md:p-5 pb-2 border-b border-white/5">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl filter drop-shadow-md">🎙️</span>
+                <div className="flex items-center gap-2 md:gap-3">
+                  <span className="text-xl md:text-3xl filter drop-shadow-md">🎙️</span>
                   <div>
-                    <h2 className="text-2xl font-black italic tracking-tight text-white">إضافة أفشة جديدة</h2>
+                    <h2 className="text-lg md:text-2xl font-black italic tracking-tight text-white">إضافة أفشة جديدة</h2>
                   </div>
                 </div>
                 <button
                   onClick={onClose}
-                  className="w-11 h-11 rounded-2xl bg-white/5 flex items-center justify-center hover:bg-white/10 border border-white/10 transition group"
+                  className="w-10 h-10 md:w-11 md:h-11 rounded-2xl bg-white/5 flex items-center justify-center hover:bg-white/10 border border-white/10 transition group"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-90 transition-transform duration-300"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="md:w-5 md:h-5 group-hover:rotate-90 transition-transform duration-300"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
                 </button>
               </div>
             </div>
 
             {/* Form Body */}
-            <div className="relative p-8 pt-6 space-y-5">
+            <div className="relative p-3 md:p-5 pt-3 md:pt-4 pb-0 space-y-2 md:space-y-4">
 
               {/* Media Type Switcher */}
               <div className="space-y-3">
@@ -101,13 +101,13 @@ export default function CreateSetupModal({ open, onClose, onCreated }: Props) {
                     <button
                       key={type}
                       onClick={() => setMediaType(type)}
-                      className={`flex-1 relative py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 z-10 ${mediaType === type ? "text-white" : "text-white/30 hover:text-white/50"
+                      className={`flex-1 relative py-2 md:py-3 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider transition-all duration-300 z-10 ${mediaType === type ? "text-white" : "text-white/30 hover:text-white/50"
                         }`}
                     >
                       {mediaType === type && (
                         <motion.div
                           layoutId="active-setup-pill"
-                          className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl shadow-lg ring-1 ring-white/10"
+                          className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl shadow-lg ring-1 ring-white/10"
                         />
                       )}
                       <span className="relative z-20 flex items-center justify-center gap-2">
@@ -129,7 +129,7 @@ export default function CreateSetupModal({ open, onClose, onCreated }: Props) {
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     placeholder="اكتب الموقف اللي حصل..."
-                    className="w-full h-24 bg-black/20 border border-white/5 group-hover:border-white/10 focus:border-orange-500/50 rounded-[1.5rem] px-6 py-5 outline-none transition-all text-lg leading-relaxed placeholder:text-white/10 resize-none custom-scrollbar shadow-inner"
+                    className={`w-full ${mediaType === 'text' ? 'h-20 md:h-24' : 'h-12 md:h-18'} bg-black/20 border border-white/5 group-hover:border-white/10 focus:border-purple-500/50 rounded-2xl md:rounded-[1.5rem] px-4 py-3 md:px-6 md:py-5 outline-none transition-all text-sm md:text-lg leading-relaxed placeholder:text-white/10 resize-none custom-scrollbar shadow-inner`}
                   />
                 </div>
 
@@ -137,7 +137,7 @@ export default function CreateSetupModal({ open, onClose, onCreated }: Props) {
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    className="space-y-4"
+                    className="space-y-2 md:space-y-4"
                   >
                     <label className="text-[10px] font-black uppercase tracking-[0.25em] text-white/20 px-4 block">ملف الميديا</label>
                     <div className="relative group">
@@ -151,7 +151,7 @@ export default function CreateSetupModal({ open, onClose, onCreated }: Props) {
                             setMediaFile(null);
                           }
                         }}
-                        className="w-full rounded-2xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-orange-500 file:text-white px-4 py-4 bg-black/20 border border-white/5 focus:border-orange-500/50 outline-none transition-all placeholder:text-white/10"
+                        className="w-full rounded-xl file:mr-3 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-[9px] md:file:text-xs file:font-bold file:bg-purple-500 file:text-white px-2 py-2 md:px-4 md:py-4 bg-black/20 border border-white/5 focus:border-purple-500/50 outline-none transition-all placeholder:text-white/10"
                       />
                     </div>
 
@@ -159,17 +159,17 @@ export default function CreateSetupModal({ open, onClose, onCreated }: Props) {
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="rounded-3xl overflow-hidden border border-white/10 h-48 bg-black/60 relative group"
+                        className="rounded-xl md:rounded-3xl overflow-hidden border border-white/10 h-24 md:h-48 bg-black/60 relative group"
                       >
-                        <img 
-                          src={URL.createObjectURL(mediaFile)} 
-                          className="w-full h-full object-cover transition duration-500 group-hover:scale-110" 
-                          alt="Preview" 
+                        <img
+                          src={URL.createObjectURL(mediaFile)}
+                          className="w-full h-full object-cover transition duration-500 group-hover:scale-110"
+                          alt="Preview"
                           onLoad={() => URL.revokeObjectURL(URL.createObjectURL(mediaFile))} // basic cleanup, not perfect but helps memory
                           onError={(e) => {
-                             setErr("عذراً، الملف غير صالح");
-                             e.currentTarget.src = "https://placehold.co/600x400/1A1D23/FFFFFF?text=%D8%A7%D9%84%D8%B5%D9%88%D8%B1%D8%A9+%D8%BA%D9%8A%D8%B1+%D9%85%D8%AA%D8%A7%D8%AD%D8%A9";
-                          }} 
+                            setErr("عذراً، الملف غير صالح");
+                            e.currentTarget.src = "https://placehold.co/600x400/1A1D23/FFFFFF?text=%D8%A7%D9%84%D8%B5%D9%88%D8%B1%D8%A9+%D8%BA%D9%8A%D8%B1+%D9%85%D8%AA%D8%A7%D8%AD%D8%A9";
+                          }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                         <span className="absolute bottom-4 left-4 text-[10px] font-black uppercase text-white/60">Preview</span>
@@ -179,13 +179,13 @@ export default function CreateSetupModal({ open, onClose, onCreated }: Props) {
                 )}
 
                 {/* Tags Input */}
-                <div className="space-y-2">
+                <div className="space-y-1 md:space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-[0.25em] text-white/20 px-4 block">التاجات (افصل بفاصلة)</label>
                   <div className="relative group">
                     <input
                       value={tagsText}
                       onChange={(e) => setTagsText(e.target.value)}
-                      className="w-full rounded-xl px-5 py-4 bg-black/20 border border-white/5 group-hover:border-white/10 focus:border-orange-500/50 outline-none transition-all text-xs placeholder:text-white/10"
+                      className="w-full rounded-xl px-4 py-3 md:px-5 md:py-4 bg-black/20 border border-white/5 group-hover:border-white/10 focus:border-purple-500/50 outline-none transition-all text-[10px] md:text-xs placeholder:text-white/10"
                       placeholder="جامعة, شغل, خروج..."
                     />
                     <div className="absolute left-5 top-1/2 -translate-y-1/2 text-base opacity-20">🏷️</div>
@@ -207,7 +207,7 @@ export default function CreateSetupModal({ open, onClose, onCreated }: Props) {
               <button
                 onClick={submit}
                 disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 rounded-2xl font-black text-lg shadow-[0_10px_30px_rgba(239,68,68,0.2)] hover:shadow-[0_15px_40px_rgba(239,68,68,0.3)] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 overflow-hidden relative group"
+                className="w-full py-3 md:py-4 bg-gradient-to-r from-[#6366F1] via-[#A855F7] to-[#EC4899] rounded-2xl font-black text-sm md:text-lg shadow-[0_10px_30px_rgba(168,85,247,0.2)] hover:shadow-[0_15px_40px_rgba(168,85,247,0.3)] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 overflow-hidden relative group mb-3 md:mb-5"
               >
                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300" />
                 <div className="relative z-10 flex items-center justify-center gap-4 text-white">
@@ -224,7 +224,7 @@ export default function CreateSetupModal({ open, onClose, onCreated }: Props) {
             </div>
 
             {/* Fine decoration */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
           </motion.div>
         </div>
       )}

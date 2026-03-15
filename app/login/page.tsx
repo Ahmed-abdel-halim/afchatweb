@@ -46,11 +46,11 @@ export default function LoginPage() {
         className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-10">
-          <h1 className="text-5xl font-black italic tracking-tighter mb-4 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">أفشات</h1>
-          <p className="text-white/50 font-bold uppercase tracking-widest text-sm">أهلاً بك مجدداً في عالم الضحك</p>
+          <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter mb-4 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">أفشات</h1>
+          <p className="text-white/50 font-bold uppercase tracking-widest text-xs md:text-sm">أهلاً بك مجدداً في عالم الضحك</p>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 shadow-2xl overflow-hidden relative group">
+        <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 shadow-2xl overflow-hidden relative group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 blur-3xl rounded-full" />
           
           <form onSubmit={onSubmit} className="relative z-10 space-y-6">

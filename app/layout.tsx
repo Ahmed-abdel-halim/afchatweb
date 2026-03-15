@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Almarai, Geist, Geist_Mono } from "next/font/google";
+import { Readex_Pro, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const almarai = Almarai({
+const readexPro = Readex_Pro({
   subsets: ["arabic"],
-  weight: ["300", "400", "700", "800"],
-  variable: "--font-almarai",
+  weight: ["200", "300", "400", "500", "600", "700"],
+  variable: "--font-readex-pro",
 });
 
 const geistSans = Geist({
@@ -31,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <body
-        className={`${almarai.variable} ${geistSans.variable} ${geistMono.variable} font-[family-name:var(--font-almarai)] antialiased`}
+        className={`${readexPro.variable} ${geistSans.variable} ${geistMono.variable} font-[family-name:var(--font-readex-pro)] antialiased`}
       >
         {children}
       </body>
