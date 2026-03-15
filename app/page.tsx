@@ -398,7 +398,7 @@ export default function Home() {
                   className="relative z-10 text-center flex flex-col items-center px-6 md:px-24"
                 >
                   {current && (
-                    <div className="flex items-center gap-3 mb-4 mt-24 md:mt-20 opacity-40">
+                    <div className="flex items-center gap-3 mb-2 mt-4 md:mt-20 opacity-40">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold tracking-tight">
                           الرد من: {current?.user?.name || current?.user_name || "Ahmed abdelhalim"}
@@ -429,7 +429,7 @@ export default function Home() {
                       {current.text}
                     </h2>
                   ) : (
-                    <h2 className="text-2xl md:text-3xl font-bold leading-tight text-white mb-2 opacity-50 max-w-lg mt-24 md:mt-32">
+                    <h2 className="text-2xl md:text-3xl font-bold leading-tight text-white mb-2 opacity-50 max-w-lg mt-8 md:mt-32">
                       لا توجد ردود
                     </h2>
                   )}
@@ -493,7 +493,7 @@ export default function Home() {
                   exit={{ opacity: 0 }}
                   className="relative z-10 text-center flex flex-col items-center"
                 >
-                  <div className="flex flex-col items-center gap-2 mb-8">
+                  <div className="flex flex-col items-center gap-2 mb-3 md:mb-8">
                     <div className="flex items-center gap-3 opacity-40">
                       <img
                         src={setup?.user?.avatar || `https://api.dicebear.com/9.x/bottts/svg?seed=${setup?.user?.id || 'admin'}`}
@@ -504,14 +504,24 @@ export default function Home() {
                   </div>
 
                   {setup?.media_type === "image" && setup?.media_url && (
-                    <div className="mb-6 w-full max-w-sm rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black/40 flex items-center justify-center min-h-[100px]">
+                    <div className="mb-4 md:mb-6 w-full max-w-[200px] md:max-w-sm rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-black/40 flex items-center justify-center min-h-[80px]">
                       <img
                         src={setup.media_url}
-                        className="w-full h-auto object-cover max-h-[40vh]"
+                        className="w-full h-auto object-cover max-h-[20vh] md:max-h-[40vh]"
                         alt="setup media"
                         onError={(e) => {
                           e.currentTarget.src = "https://placehold.co/600x400/1A1D23/FFFFFF?text=%D8%A7%D9%84%D8%B5%D9%88%D8%B1%D8%A9+%D8%BA%D9%8A%D8%B1+%D9%85%D8%AA%D8%A7%D8%AD%D8%A9";
                         }}
+                      />
+                    </div>
+                  )}
+
+                  {setup?.media_type === "video" && setup?.media_url && (
+                    <div className="mb-4 md:mb-6 w-full max-w-[200px] md:max-w-sm rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-black/40 flex items-center justify-center min-h-[80px]">
+                      <video
+                        src={setup.media_url}
+                        className="w-full h-auto object-cover max-h-[20vh] md:max-h-[40vh]"
+                        controls
                       />
                     </div>
                   )}
