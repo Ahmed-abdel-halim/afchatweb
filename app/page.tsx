@@ -324,12 +324,12 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex grow items-center justify-center px-0 md:px-6 py-0 md:py-4 relative">
-        <div className="relative w-full max-w-[1750px] h-full flex items-center justify-center">
-          <div className="w-full h-full md:h-[85vh] grid grid-cols-1 md:grid-cols-2 gap-0 overflow-hidden md:rounded-[2.5rem] md:border md:border-white/5 md:shadow-2xl relative bg-transparent md:bg-black/20">
+      <main className="flex grow items-stretch md:items-center justify-center px-0 md:px-6 py-0 md:py-4 relative">
+        <div className="relative w-full max-w-[1750px] flex flex-col md:flex-row items-stretch md:items-center justify-center">
+          <div className="w-full flex-1 md:h-[85vh] flex flex-col md:grid md:grid-cols-2 gap-0 overflow-hidden md:rounded-[2.5rem] md:border md:border-white/5 md:shadow-2xl relative bg-transparent md:bg-black/20">
 
             {/* PUNCHLINE PANE (Bottom on mobile) */}
-            <div className="bg-gradient-to-br from-[#A855F7]/80 via-[#D946EF]/80 to-[#EC4899]/80 md:bg-gradient-to-br md:from-[#A855F7] md:via-[#D946EF] md:to-[#EC4899] relative flex flex-col justify-center px-6 md:px-12 pt-16 md:pt-16 pb-32 md:pb-24 overflow-hidden order-2 md:order-1 md:border-r md:border-white/10 shadow-inner">
+            <div className="bg-gradient-to-br from-[#A855F7]/80 via-[#D946EF]/80 to-[#EC4899]/80 md:bg-gradient-to-br md:from-[#A855F7] md:via-[#D946EF] md:to-[#EC4899] relative flex flex-col justify-center px-6 md:px-12 pt-10 md:pt-16 pb-20 md:pb-24 overflow-hidden order-2 md:order-1 md:border-r md:border-white/10 shadow-inner flex-1">
               {/* Shine/Glow Effect */}
               <div className="absolute -top-10 -right-10 w-[500px] h-[500px] bg-white/30 blur-[120px] rounded-full pointer-events-none opacity-50" />
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.1),_transparent_70%)] pointer-events-none" />
@@ -456,7 +456,7 @@ export default function Home() {
             </div>
 
             {/* SETUP PANE (Top on mobile) */}
-            <div className="bg-[#2E1065] md:bg-gradient-to-br md:from-[#4C1D95] md:via-[#2E1065] md:to-[#1E1B4B] relative flex flex-col justify-center px-6 md:px-12 pt-16 md:pt-16 pb-16 md:pb-24 overflow-hidden order-1 md:order-2 md:border-l md:border-white/5 shadow-2xl md:shadow-none">
+            <div className="bg-[#2E1065] md:bg-gradient-to-br md:from-[#4C1D95] md:via-[#2E1065] md:to-[#1E1B4B] relative flex flex-col justify-center px-6 md:px-12 pt-10 md:pt-16 pb-12 md:pb-24 overflow-hidden order-1 md:order-2 md:border-l md:border-white/5 shadow-2xl md:shadow-none flex-1">
               {/* Shine/Glow Effect */}
               <div className="absolute -top-20 -left-20 w-[400px] h-[400px] bg-purple-500/20 blur-[100px] rounded-full pointer-events-none" />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,_rgba(255,255,255,0.05),_transparent_60%)] pointer-events-none" />
