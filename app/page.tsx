@@ -350,7 +350,7 @@ export default function Home() {
               </div>
 
               {/* Reactions - TikTok Style Sidebar */}
-              <div className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 md:gap-5 z-[60]">
+              <div className="absolute right-2 md:right-6 top-[42%] md:top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 md:gap-5 z-[60]">
 
                 {/* Laugh */}
                 <div className="flex flex-col items-center group">
@@ -434,7 +434,7 @@ export default function Home() {
                     </h2>
                   )}
 
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-[-125px] md:bottom-[-160px] flex items-center gap-4 md:gap-6 z-40 md:relative md:bottom-0 md:mt-12 md:left-auto md:translate-x-0">
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-[-75px] md:bottom-[-160px] flex items-center gap-4 md:gap-6 z-40 md:relative md:bottom-0 md:mt-12 md:left-auto md:translate-x-0">
                     <div className="flex items-center gap-4">
                       <button
                         onClick={prevP}
