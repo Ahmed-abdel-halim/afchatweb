@@ -325,9 +325,10 @@ export default function Home() {
           >
             {/* PUNCHLINE PANE */}
             <div id="punchline-container" className="bg-transparent relative flex flex-col justify-center px-6 md:px-12 pt-10 md:pt-16 pb-20 md:pb-24 overflow-hidden order-2 md:order-1 md:border-r md:border-white/60 flex-1">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-200/40 blur-[130px] rounded-full pointer-events-none z-0" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] bg-cyan-100/30 blur-[60px] rounded-full pointer-events-none z-0" />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(191,219,254,0.4),_transparent_65%)] pointer-events-none z-0" />
+              {/* Vibrant Spotlight Glows for Punchline */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/40 blur-[120px] rounded-full pointer-events-none z-0" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-purple-400/30 blur-[80px] rounded-full pointer-events-none z-0" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(99,102,241,0.25),_transparent_75%)] pointer-events-none z-0" />
 
               <div className="absolute top-6 md:top-10 left-6 md:left-10 z-30 flex items-center gap-2">
                 <div className="px-3 md:px-4 py-1.5 bg-black/20 backdrop-blur-md rounded-xl text-[10px] md:text-[11px] font-bold border border-white/5 text-white/40 h-10 md:h-11 flex items-center uppercase tracking-widest">
@@ -355,12 +356,26 @@ export default function Home() {
                   </div>
                   <span className="text-[11px] md:text-sm font-black text-white -mt-1">{Math.floor((current?.laughs || 0) / 10)}%</span>
                 </div>
+
+                {/* Share - Mobile Only */}
+                <div className="flex flex-col items-center md:hidden">
+                  <button className="w-12 h-12 flex items-center justify-center text-white drop-shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
+                  </button>
+                </div>
+
+                {/* Comments - Mobile Only */}
+                <div className="flex flex-col items-center md:hidden">
+                  <button className="w-12 h-12 flex items-center justify-center text-white drop-shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                  </button>
+                </div>
               </div>
 
               <AnimatePresence mode="wait">
                 <motion.div key={current?.id || 'loading'} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative z-10 text-center flex flex-col items-center px-6 md:px-24">
                   {current && (
-                    <div className="flex items-center gap-3 mb-2 mt-4 md:mt-20 opacity-40">
+                    <div className="flex items-center gap-3 mb-4 opacity-30">
                       <span className="text-xs font-black uppercase tracking-tight">الرد من: {current?.user?.name || current?.user_name || "Unknown"}</span>
                       <img src={current?.user_avatar || current?.user?.avatar || `https://api.dicebear.com/9.x/bottts/svg?seed=${current?.id}`} className="w-5 h-5 rounded-full" alt="avatar" />
                     </div>
@@ -372,14 +387,28 @@ export default function Home() {
                   )}
                   {current?.text ? (
                     <h2 className="text-2xl md:text-3xl font-black leading-tight text-white mb-2 max-w-lg neon-text">{current.text}</h2>
-                  ) : <h2 className="text-2xl md:text-3xl font-bold leading-tight text-white opacity-30 mt-8 md:mt-32">لا توجد ردود بعد</h2>}
+                  ) : <h2 className="text-2xl md:text-3xl font-bold leading-tight text-white opacity-20">لا توجد ردود بعد</h2>}
+
+                  {/* Desktop Only: Rodoud Navigation Arrows */}
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-[-80px] hidden md:flex items-center gap-4 z-40">
+                    <button onClick={prevP} className="w-12 h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white hover:bg-white/15 transition-all backdrop-blur-md">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="rotate-180"><path d="m9 18 6-6-6-6" /></svg>
+                    </button>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white/30">تصفح الردود</span>
+                    <button onClick={nextP} className="w-12 h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white hover:bg-white/15 transition-all backdrop-blur-md">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                    </button>
+                  </div>
                 </motion.div>
               </AnimatePresence>
             </div>
 
             {/* SETUP PANE */}
             <div id="setup-container" className="bg-gradient-to-b from-[#4b1088] via-[#240b4a] to-[#0d0216] relative flex flex-col justify-center px-6 md:px-12 pt-10 md:pt-16 pb-12 md:pb-24 overflow-hidden order-1 md:order-2 md:border-l md:border-white/60 flex-1">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-300/20 blur-[140px] rounded-full pointer-events-none z-0" />
+              {/* Intense Central Glow for Setup */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/40 blur-[140px] rounded-full pointer-events-none z-0" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-indigo-500/30 blur-[100px] rounded-full pointer-events-none z-0" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(139,92,246,0.3),_transparent_75%)] pointer-events-none z-0" />
               <button onClick={() => (loggedIn || getToken()) ? setOpenCreate(true) : router.push("/login")} className="absolute top-6 md:top-10 left-6 md:left-10 bg-gradient-to-r from-[#FF0080] to-[#E91E63] hover:scale-105 active:scale-95 transition shadow-xl px-4 md:px-6 py-2 md:py-2.5 rounded-full md:rounded-2xl flex items-center gap-2 font-black text-[10px] md:text-sm z-30 text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
                 <span className="hidden md:inline">عندك أفشة؟</span>
@@ -389,11 +418,22 @@ export default function Home() {
               <div className="absolute top-6 md:top-10 right-6 md:right-10 flex flex-col items-end gap-2 z-30">
                 {setup?.tags && setup.tags.length > 0 && (
                   <div className="flex flex-col gap-2">
-                    {setup.tags.map((tag: any, idx: number) => (
-                      <div key={idx} className="px-2 py-1 bg-white/10 backdrop-blur-md rounded-lg text-[8px] md:text-[10px] font-black uppercase tracking-wider border border-white/10 text-white/60">
-                        {typeof tag === 'string' ? tag : (tag.name || "tag")}
-                      </div>
-                    ))}
+                    {setup.tags.map((tag: any, idx: number) => {
+                      const colors = [
+                        "bg-blue-600/30 border-blue-400/20 text-blue-100",
+                        "bg-rose-600/30 border-rose-400/20 text-rose-100",
+                        "bg-purple-600/30 border-purple-400/20 text-purple-100",
+                        "bg-orange-600/30 border-orange-400/20 text-orange-100",
+                        "bg-emerald-600/30 border-emerald-400/20 text-emerald-100"
+                      ];
+                      const colorClass = colors[idx % colors.length];
+                      const tagName = typeof tag === 'string' ? tag : (tag.name || "tag");
+                      return (
+                        <div key={idx} className={`px-2 py-1 backdrop-blur-md rounded-lg text-[8px] md:text-[10px] font-black uppercase tracking-wider border shadow-sm ${colorClass}`}>
+                          <span className="opacity-50">#</span> {tagName}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
