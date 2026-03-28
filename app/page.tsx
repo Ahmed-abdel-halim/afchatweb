@@ -335,20 +335,24 @@ export default function Home() {
           <motion.div
             onPanEnd={(_, info) => {
               const { offset, velocity } = info;
+              
+              // Thresholds: Lower values = more sensitive
+              const moveThreshold = 30;
+              const velocityThreshold = 100;
 
               // Horizontal Swipe (Rodoud)
-              if (Math.abs(offset.x) > 50 || Math.abs(velocity.x) > 300) {
+              if (Math.abs(offset.x) > moveThreshold || Math.abs(velocity.x) > velocityThreshold) {
                 if (offset.x > 0) prevP();
                 else nextP();
               }
-
+              
               // Vertical Swipe (Afshat)
-              if (Math.abs(offset.y) > 50 || Math.abs(velocity.y) > 300) {
+              if (Math.abs(offset.y) > moveThreshold || Math.abs(velocity.y) > velocityThreshold) {
                 if (offset.y > 0) loadPrev();
                 else loadNext();
               }
             }}
-            className="w-full flex-1 md:h-[82vh] flex flex-col md:grid md:grid-cols-2 gap-0 overflow-hidden md:rounded-[2.5rem] md:border md:border-white/60 md:shadow-2xl relative bg-transparent"
+            className="w-full flex-1 md:h-[82vh] flex flex-col md:grid md:grid-cols-2 gap-0 overflow-hidden md:rounded-[2.5rem] md:border md:border-white/60 md:shadow-2xl relative bg-transparent touch-none"
           >
 
             {/* PUNCHLINE PANE (Bottom on mobile) */}
