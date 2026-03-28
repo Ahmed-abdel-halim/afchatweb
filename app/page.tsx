@@ -20,6 +20,7 @@ interface Tag {
   id: number;
   name: string;
 }
+
 interface Punchline {
   id: number;
   text: string;
@@ -74,8 +75,6 @@ export default function Home() {
   const [openAddPunchline, setOpenAddPunchline] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  const touchStartRef = useRef({ x: 0, y: 0 });
-
   // --- Derived ---
   const current = useMemo(() => punchlines[pIndex] ?? null, [punchlines, pIndex]);
 
@@ -93,13 +92,10 @@ export default function Home() {
   }, [punchlines.length]);
 
   const loadNext = useCallback(async () => {
-    // 1. Existing Forward
     if (activeIndex < allSetups.length - 1) {
       setActiveIndex(prev => prev + 1);
       return;
     }
-
-    // 2. Buffer
     if (buffer.length > 0) {
       const nextItem = buffer[0];
       setBuffer(prev => prev.slice(1));
@@ -108,16 +104,11 @@ export default function Home() {
       setActiveIndex(prev => prev + 1);
       return;
     }
-
     if (loadingSetup) return;
-
-    // 3. End reached (Loop)
     if (endReached) {
       if (allSetups.length > 0) setActiveIndex(0);
       return;
     }
-
-    // 4. Fetch
     setLoadingSetup(true);
     try {
       const json = await getFeed(nextCursor ?? undefined);
@@ -140,7 +131,7 @@ export default function Home() {
     } finally {
       setLoadingSetup(false);
     }
-  }, [activeIndex, allSetups, buffer, cursor, endReached, loadingSetup, nextCursor]);
+  }, [activeIndex, allSetups, buffer, endReached, loadingSetup, nextCursor]);
 
   const loadPrev = useCallback(() => {
     if (activeIndex > 0) {
@@ -151,8 +142,6 @@ export default function Home() {
   }, [activeIndex, allSetups.length]);
 
   // --- Effects ---
-
-  // Sync current item states whenever activeIndex changes
   useEffect(() => {
     if (activeIndex >= 0 && allSetups[activeIndex]) {
       const item = allSetups[activeIndex];
@@ -163,7 +152,6 @@ export default function Home() {
     }
   }, [activeIndex, allSetups]);
 
-  // Initial Load
   useEffect(() => {
     loadNext();
     const token = getToken();
@@ -176,51 +164,14 @@ export default function Home() {
     }
   }, []); // eslint-disable-line
 
-  // Global Swipe Logic for Mobile
-  useEffect(() => {
-    const minSwipeDistance = 50;
-    
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartRef.current.x = e.touches[0].clientX;
-      touchStartRef.current.y = e.touches[0].clientY;
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
-      const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
-      const absX = Math.abs(dx);
-      const absY = Math.abs(dy);
-
-      if (Math.max(absX, absY) > minSwipeDistance) {
-        if (absX > absY) {
-          if (dx > 0) prevP();
-          else nextP();
-        } else {
-          if (dy > 0) loadPrev();
-          else loadNext();
-        }
-      }
-    };
-
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd, { passive: true });
-    return () => {
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [nextP, prevP, loadNext, loadPrev]);
-
-  // View Counter
   useEffect(() => {
     if (current?.id) {
       postView(current.id);
     }
   }, [current?.id]);
 
-  // Prefetch Buffer
   useEffect(() => {
     if (buffer.length >= 3 || prefetching || loadingSetup || endReached) return;
-
     const fillBuffer = async () => {
       setPrefetching(true);
       try {
@@ -237,12 +188,11 @@ export default function Home() {
           setEndReached(true);
         }
       } catch (e) {
-        console.error("Buffer prefetch failed", e);
+        // failed
       } finally {
         setPrefetching(false);
       }
     };
-
     fillBuffer();
   }, [buffer.length, nextCursor, prefetching, loadingSetup, endReached]);
 
@@ -251,7 +201,6 @@ export default function Home() {
     if (!current?.id) return;
     setLaughing(true);
     setTimeout(() => setLaughing(false), 300);
-
     setPunchlines(prev => prev.map(p => {
       if (p.id === current.id) {
         const newLaughs = (p.laughs || 0) + 1;
@@ -260,13 +209,9 @@ export default function Home() {
       }
       return p;
     }));
-
-    try {
-      await postLaugh(current.id);
-    } catch (e) {}
+    try { await postLaugh(current.id); } catch (e) {}
   }
 
-  // --- Render ---
   return (
     <div className="min-h-screen bg-transparent text-white flex flex-col font-[family-name:var(--font-cairo)] selection:bg-purple-500/30 overflow-hidden relative">
       <div className="mesh-bg pointer-events-none">
@@ -292,7 +237,7 @@ export default function Home() {
           />
         </div>
 
-        <div className="flex items-center gap-3 md:gap-6 w-1/3 md:w-1/4 justify-end">
+        <div className="flex items-center gap-3 md:gap-6 w-1/3 md:w-1/4 justify-end pr-4 md:pr-10">
           {loggedIn ? (
             <>
               <button className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all relative group">
@@ -361,9 +306,24 @@ export default function Home() {
 
       <main className="flex grow items-stretch md:items-center justify-center px-4 md:px-6 py-0 md:py-4 relative">
         <div className="relative w-full max-w-[1750px] flex flex-col md:flex-row items-stretch md:items-center justify-center">
-          <div className="w-full flex-1 md:h-[82vh] flex flex-col md:grid md:grid-cols-2 gap-0 overflow-hidden md:rounded-[2.5rem] md:border md:border-white/60 md:shadow-2xl relative bg-transparent touch-none">
-            
-            {/* PUNCHLINE PANE (Bottom on mobile) */}
+          <motion.div
+            onPanEnd={(_, info) => {
+              const { offset, velocity } = info;
+              const threshold = 40;
+              const vThreshold = 100;
+
+              if (Math.abs(offset.x) > threshold || Math.abs(velocity.x) > vThreshold) {
+                if (offset.x > 0) prevP();
+                else nextP();
+              }
+              if (Math.abs(offset.y) > threshold || Math.abs(velocity.y) > vThreshold) {
+                if (offset.y > 0) loadPrev();
+                else loadNext();
+              }
+            }}
+            className="w-full flex-1 md:h-[82vh] flex flex-col md:grid md:grid-cols-2 gap-0 overflow-hidden md:rounded-[2.5rem] md:border md:border-white/60 md:shadow-2xl relative bg-transparent touch-none"
+          >
+            {/* PUNCHLINE PANE */}
             <div id="punchline-container" className="bg-transparent relative flex flex-col justify-center px-6 md:px-12 pt-10 md:pt-16 pb-20 md:pb-24 overflow-hidden order-2 md:order-1 md:border-r md:border-white/60 flex-1">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-200/40 blur-[130px] rounded-full pointer-events-none z-0" />
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] bg-cyan-100/30 blur-[60px] rounded-full pointer-events-none z-0" />
@@ -384,7 +344,7 @@ export default function Home() {
 
               <div className="absolute right-2 md:right-6 top-[42%] md:top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 md:gap-5 z-[60]">
                 <div className="flex flex-col items-center group">
-                  <motion.div animate={laughing ? { scale: [1, 1.3, 1] } : {}} whileTap={{ scale: 0.8 }} onClick={laugh} className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center text-3xl md:text-4xl cursor-pointer transition-all relative">
+                  <motion.div animate={laughing ? { scale: [1, 1.3, 1] } : {}} whileTap={{ scale: 0.8 }} onClick={laugh} className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center text-3xl md:text-4xl cursor-pointer relative">
                     <span className="filter drop-shadow-lg select-none">😂</span>
                   </motion.div>
                   <span className="text-[11px] md:text-sm font-black text-white -mt-1">{current?.laughs || 0}</span>
@@ -411,20 +371,15 @@ export default function Home() {
                     </div>
                   )}
                   {current?.text ? (
-                    <h2 className="text-2xl md:text-3xl font-black leading-tight text-white mb-2 max-w-lg neon-text">
-                      {current.text}
-                    </h2>
-                  ) : (
-                    <h2 className="text-2xl md:text-3xl font-bold leading-tight text-white mb-2 opacity-30">لا توجد ردود بعد</h2>
-                  )}
+                    <h2 className="text-2xl md:text-3xl font-black leading-tight text-white mb-2 max-w-lg neon-text">{current.text}</h2>
+                  ) : <h2 className="text-2xl md:text-3xl font-bold leading-tight text-white opacity-30 mt-8 md:mt-32">لا توجد ردود بعد</h2>}
                 </motion.div>
               </AnimatePresence>
             </div>
 
-            {/* SETUP PANE (Top on mobile) */}
+            {/* SETUP PANE */}
             <div id="setup-container" className="bg-gradient-to-b from-[#4b1088] via-[#240b4a] to-[#0d0216] relative flex flex-col justify-center px-6 md:px-12 pt-10 md:pt-16 pb-12 md:pb-24 overflow-hidden order-1 md:order-2 md:border-l md:border-white/60 flex-1">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-300/20 blur-[140px] rounded-full pointer-events-none z-0" />
-
               <button onClick={() => (loggedIn || getToken()) ? setOpenCreate(true) : router.push("/login")} className="absolute top-6 md:top-10 left-6 md:left-10 bg-gradient-to-r from-[#FF0080] to-[#E91E63] hover:scale-105 active:scale-95 transition shadow-xl px-4 md:px-6 py-2 md:py-2.5 rounded-full md:rounded-2xl flex items-center gap-2 font-black text-[10px] md:text-sm z-30 text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
                 <span className="hidden md:inline">عندك أفشة؟</span>
@@ -469,9 +424,8 @@ export default function Home() {
                 </motion.div>
               </AnimatePresence>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Desktop Footer Toolbar */}
           <div className="hidden md:flex fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-[1750px] justify-center pointer-events-none">
             <div className="relative flex items-center bg-black/60 backdrop-blur-2xl px-2 h-16 rounded-full border border-white/10 shadow-2xl min-w-[240px] pointer-events-auto">
               <div className="flex-1 flex justify-center">
@@ -496,7 +450,6 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Modals */}
       <CreateSetupModal
         open={openCreate}
         onClose={() => setOpenCreate(false)}
