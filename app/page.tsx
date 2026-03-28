@@ -333,25 +333,22 @@ export default function Home() {
       <main className="flex grow items-stretch md:items-center justify-center px-4 md:px-6 py-0 md:py-4 relative">
         <div className="relative w-full max-w-[1750px] flex flex-col md:flex-row items-stretch md:items-center justify-center">
           <motion.div
-            drag
-            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-            dragElastic={0.2}
-            onDragEnd={(_, info) => {
+            onPanEnd={(_, info) => {
               const { offset, velocity } = info;
-              
+
               // Horizontal Swipe (Rodoud)
-              if (Math.abs(offset.x) > 100 || Math.abs(velocity.x) > 500) {
+              if (Math.abs(offset.x) > 50 || Math.abs(velocity.x) > 300) {
                 if (offset.x > 0) prevP();
                 else nextP();
               }
-              
+
               // Vertical Swipe (Afshat)
-              if (Math.abs(offset.y) > 100 || Math.abs(velocity.y) > 500) {
+              if (Math.abs(offset.y) > 50 || Math.abs(velocity.y) > 300) {
                 if (offset.y > 0) loadPrev();
                 else loadNext();
               }
             }}
-            className="w-full flex-1 md:h-[82vh] flex flex-col md:grid md:grid-cols-2 gap-0 overflow-hidden md:rounded-[2.5rem] md:border md:border-white/60 md:shadow-2xl relative bg-transparent touch-none"
+            className="w-full flex-1 md:h-[82vh] flex flex-col md:grid md:grid-cols-2 gap-0 overflow-hidden md:rounded-[2.5rem] md:border md:border-white/60 md:shadow-2xl relative bg-transparent"
           >
 
             {/* PUNCHLINE PANE (Bottom on mobile) */}
@@ -498,7 +495,7 @@ export default function Home() {
                 <span className="hidden md:inline">عندك أفشة؟</span>
                 <span className="md:hidden">أضف</span>
               </button>
-              
+
               {/* Top Right Tags */}
               <div className="absolute top-6 md:top-10 right-6 md:right-10 flex flex-col items-end gap-2 z-30">
                 {setup?.tags && setup.tags.length > 0 && (
