@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Readex_Pro, Geist, Geist_Mono } from "next/font/google";
+import { Cairo, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const readexPro = Readex_Pro({
+const cairo = Cairo({
   subsets: ["arabic"],
-  weight: ["200", "300", "400", "500", "600", "700"],
-  variable: "--font-readex-pro",
+  weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-cairo",
 });
 
 const geistSans = Geist({
@@ -31,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <body
-        className={`${readexPro.variable} ${geistSans.variable} ${geistMono.variable} font-[family-name:var(--font-readex-pro)] antialiased`}
+        className={`${cairo.variable} ${geistSans.variable} ${geistMono.variable} font-[family-name:var(--font-cairo)] antialiased`}
       >
         {children}
       </body>

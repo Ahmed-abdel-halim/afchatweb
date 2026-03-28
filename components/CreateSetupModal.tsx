@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 type Props = {
   open: boolean;
   onClose: () => void;
-  onCreated?: () => void;
+  onCreated?: (newSetup: any) => void;
 };
 
 export default function CreateSetupModal({ open, onClose, onCreated }: Props) {
@@ -32,7 +32,7 @@ export default function CreateSetupModal({ open, onClose, onCreated }: Props) {
 
     setLoading(true);
     try {
-      await createSetup({
+      const res = await createSetup({
         text: text.trim(),
         media_type: mediaType,
         media_file: mediaType === "text" ? null : mediaFile,
@@ -42,7 +42,7 @@ export default function CreateSetupModal({ open, onClose, onCreated }: Props) {
       setMediaFile(null);
       setTagsText("");
       onClose();
-      onCreated?.();
+      onCreated?.(res.data);
     } catch (e: any) {
       setErr(e?.message || "حصل خطأ أثناء النشر");
     } finally {

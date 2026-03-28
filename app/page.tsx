@@ -232,9 +232,15 @@ export default function Home() {
   const prevP = () => setPIndex(prev => (prev - 1 + (punchlines.length || 1)) % (punchlines.length || 1));
 
   return (
-    <div className="min-h-screen bg-transparent text-white flex flex-col font-[family-name:var(--font-readex-pro)] selection:bg-purple-500/30 overflow-hidden relative">
+    <div className="min-h-screen bg-transparent text-white flex flex-col font-[family-name:var(--font-cairo)] selection:bg-purple-500/30 overflow-hidden relative">
+      {/* Animated Background Mesh */}
+      <div className="mesh-bg pointer-events-none">
+        <div className="mesh-blob blob-1" />
+        <div className="mesh-blob blob-2" />
+        <div className="mesh-blob blob-3" />
+      </div>
       {/* HEADER */}
-      <header className="flex items-center justify-between px-6 md:px-12 py-4 md:py-6 z-[100] sticky top-0 bg-black/5 backdrop-blur-2xl border-b border-white/5">
+      <header className="flex items-center justify-between px-6 md:px-12 py-4 md:py-6 z-[100] sticky top-0 bg-white/5 backdrop-blur-3xl border-b border-white/5">
 
         {/* Left Side: Logo */}
         <div className="flex items-center gap-2 md:gap-4 w-1/3 md:w-1/4">
@@ -257,22 +263,22 @@ export default function Home() {
         <div className="flex items-center gap-3 md:gap-6 w-1/3 md:w-1/4 justify-end pr-10 md:pr-16">
           {loggedIn ? (
             <>
-              <div className="w-11 h-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center cursor-pointer hover:bg-white/20 transition text-xl relative shadow-sm">
-                🔔
-                <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-pink-500 rounded-full border-2 border-[#0D0F14]" />
-              </div>
+              <button className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all relative group">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white transition-transform group-hover:scale-110"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+                <div className="absolute top-[7px] right-[7px] w-2.5 h-2.5 bg-[#FF0000]/80 rounded-full border-2 border-[#1A1D23] shadow-lg animate-pulse" />
+              </button>
 
               <div className="relative">
                 <div
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="h-11 pl-4 pr-2 bg-white/10 border border-white/10 rounded-full flex items-center gap-3 cursor-pointer hover:bg-white/20 transition-all select-none group"
+                  className="h-10 md:h-11 pl-0 md:pl-4 pr-0 md:pr-2 bg-transparent md:bg-white/10 border-none md:border md:border-white/10 rounded-full flex items-center md:gap-3 cursor-pointer hover:bg-white/5 md:hover:bg-white/20 transition-all select-none group"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-20 group-hover:opacity-100 transition-opacity"><path d="m6 9 6 6 6-6" /></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-20 group-hover:opacity-100 transition-opacity hidden md:inline"><path d="m6 9 6 6 6-6" /></svg>
                   <div className="flex flex-col text-right hidden md:flex">
                     <span className="text-[11px] font-black leading-tight text-white">{user?.name || "المستخدم"}</span>
                     <span className="text-[8px] opacity-40 font-black uppercase tracking-tighter">عضو جديد</span>
                   </div>
-                  <div className="w-8 h-8 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-0.5 relative">
+                  <div className="w-9 h-9 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-0.5 relative">
                     <img
                       src={user?.avatar || `https://api.dicebear.com/9.x/bottts/svg?seed=${user?.email || 'afshat'}`}
                       className="w-full h-full rounded-full object-cover bg-[#0D0F14]"
@@ -324,15 +330,37 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex grow items-stretch md:items-center justify-center px-0 md:px-6 py-0 md:py-4 relative">
+      <main className="flex grow items-stretch md:items-center justify-center px-4 md:px-6 py-0 md:py-4 relative">
         <div className="relative w-full max-w-[1750px] flex flex-col md:flex-row items-stretch md:items-center justify-center">
-          <div className="w-full flex-1 md:h-[85vh] flex flex-col md:grid md:grid-cols-2 gap-0 overflow-hidden md:rounded-[2.5rem] md:border md:border-white/5 md:shadow-2xl relative bg-transparent md:bg-black/20">
+          <motion.div
+            drag
+            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(_, info) => {
+              const { offset, velocity } = info;
+              
+              // Horizontal Swipe (Rodoud)
+              if (Math.abs(offset.x) > 100 || Math.abs(velocity.x) > 500) {
+                if (offset.x > 0) prevP();
+                else nextP();
+              }
+              
+              // Vertical Swipe (Afshat)
+              if (Math.abs(offset.y) > 100 || Math.abs(velocity.y) > 500) {
+                if (offset.y > 0) loadPrev();
+                else loadNext();
+              }
+            }}
+            className="w-full flex-1 md:h-[82vh] flex flex-col md:grid md:grid-cols-2 gap-0 overflow-hidden md:rounded-[2.5rem] md:border md:border-white/60 md:shadow-2xl relative bg-transparent touch-none"
+          >
 
             {/* PUNCHLINE PANE (Bottom on mobile) */}
-            <div className="bg-gradient-to-br from-[#A855F7]/80 via-[#D946EF]/80 to-[#EC4899]/80 md:bg-gradient-to-br md:from-[#A855F7] md:via-[#D946EF] md:to-[#EC4899] relative flex flex-col justify-center px-6 md:px-12 pt-10 md:pt-16 pb-20 md:pb-24 overflow-hidden order-2 md:order-1 md:border-r md:border-white/10 shadow-inner flex-1">
-              {/* Shine/Glow Effect */}
-              <div className="absolute -top-10 -right-10 w-[500px] h-[500px] bg-white/30 blur-[120px] rounded-full pointer-events-none opacity-50" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.1),_transparent_70%)] pointer-events-none" />
+            <div id="punchline-container" className="bg-transparent relative flex flex-col justify-center px-6 md:px-12 pt-10 md:pt-16 pb-20 md:pb-24 overflow-hidden order-2 md:order-1 md:border-r md:border-white/60 flex-1">
+              {/* Central Intense Spotlight Glow */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-200/40 blur-[130px] rounded-full pointer-events-none opacity-100 z-0" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] bg-cyan-100/30 blur-[60px] rounded-full pointer-events-none z-0" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(191,219,254,0.4),_transparent_65%)] pointer-events-none z-0" />
+
 
               <div className="absolute top-6 md:top-10 left-6 md:left-10 z-30 flex items-center gap-2">
                 <div className="px-3 md:px-4 py-1.5 bg-black/20 backdrop-blur-md rounded-xl text-[10px] md:text-[11px] font-bold border border-white/5 text-white/40 uppercase tracking-widest h-10 md:h-11 flex items-center">
@@ -370,7 +398,7 @@ export default function Home() {
                   <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center text-3xl md:text-4xl cursor-pointer transition-all">
                     <span className="filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] select-none group-hover:scale-110 transition-transform">🔥</span>
                   </div>
-                  <span className="text-[11px] md:text-sm font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] -mt-1">{current ? Math.round((current.strength ?? 0) * 100) : 0}%</span>
+                  <span className="text-[11px] md:text-sm font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] -mt-1">{Math.floor((current?.laughs || 0) / 10)}%</span>
                 </div>
 
                 {/* Share - Mobile Only Sidebar */}
@@ -400,7 +428,7 @@ export default function Home() {
                   {current && (
                     <div className="flex items-center gap-3 mb-2 mt-4 md:mt-20 opacity-40">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold tracking-tight">
+                        <span className="text-xs font-black tracking-tight">
                           الرد من: {current?.user?.name || current?.user_name || "Ahmed abdelhalim"}
                         </span>
                         <img
@@ -425,7 +453,7 @@ export default function Home() {
                   )}
 
                   {current?.text ? (
-                    <h2 className="text-2xl md:text-3xl font-bold leading-tight text-white mb-2 max-w-lg">
+                    <h2 className="text-2xl md:text-3xl font-black leading-tight text-white mb-2 max-w-lg neon-text">
                       {current.text}
                     </h2>
                   ) : (
@@ -434,18 +462,18 @@ export default function Home() {
                     </h2>
                   )}
 
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-[-75px] md:bottom-[-160px] flex items-center gap-4 md:gap-6 z-40 md:relative md:bottom-0 md:mt-12 md:left-auto md:translate-x-0">
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-[-75px] md:bottom-[-160px] hidden md:flex items-center gap-4 md:gap-6 z-40 md:relative md:bottom-0 md:mt-12 md:left-auto md:translate-x-0">
                     <div className="flex items-center gap-4">
                       <button
                         onClick={prevP}
-                        className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white/40 hover:bg-white/20 transition-all backdrop-blur-md"
+                        className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/20 border border-white/10 flex items-center justify-center text-white hover:bg-black/40 transition-all backdrop-blur-md"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="rotate-180 md:rotate-0"><path d="m9 18 6-6-6-6" /></svg>
                       </button>
                       <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white/30 hidden md:inline">تصفح الردود</span>
                       <button
                         onClick={nextP}
-                        className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white/40 hover:bg-white/20 transition-all backdrop-blur-md"
+                        className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/20 border border-white/10 flex items-center justify-center text-white hover:bg-black/40 transition-all backdrop-blur-md"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="rotate-180 md:rotate-0"><path d="m15 18-6-6 6-6" /></svg>
                       </button>
@@ -456,30 +484,58 @@ export default function Home() {
             </div>
 
             {/* SETUP PANE (Top on mobile) */}
-            <div className="bg-[#2E1065] md:bg-gradient-to-br md:from-[#4C1D95] md:via-[#2E1065] md:to-[#1E1B4B] relative flex flex-col justify-center px-6 md:px-12 pt-10 md:pt-16 pb-12 md:pb-24 overflow-hidden order-1 md:order-2 md:border-l md:border-white/5 shadow-2xl md:shadow-none flex-1">
-              {/* Shine/Glow Effect */}
-              <div className="absolute -top-20 -left-20 w-[400px] h-[400px] bg-purple-500/20 blur-[100px] rounded-full pointer-events-none" />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,_rgba(255,255,255,0.05),_transparent_60%)] pointer-events-none" />
+            <div id="setup-container" className="bg-gradient-to-b from-[#4b1088] via-[#240b4a] to-[#0d0216] relative flex flex-col justify-center px-6 md:px-12 pt-10 md:pt-16 pb-12 md:pb-24 overflow-hidden order-1 md:order-2 md:border-l md:border-white/60 shadow-2xl md:shadow-none flex-1">
+              {/* Central Intense Spotlight Glow for Setup */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-300/20 blur-[140px] rounded-full pointer-events-none z-0" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(147,197,253,0.2),_transparent_70%)] pointer-events-none z-0" />
+
 
               <button
                 onClick={() => (loggedIn || getToken()) ? setOpenCreate(true) : router.push("/login")}
                 className="absolute top-6 md:top-10 left-6 md:left-10 bg-gradient-to-r from-[#FF0080] to-[#E91E63] hover:scale-105 active:scale-95 transition shadow-xl px-4 md:px-6 py-2 md:py-2.5 rounded-full md:rounded-2xl flex items-center gap-2 font-black text-[10px] md:text-sm z-30 text-white"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="md:w-[18px] md:h-[18px]"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
-                <span>عندك أفشة؟</span>
+                <span className="hidden md:inline">عندك أفشة؟</span>
+                <span className="md:hidden">أضف</span>
               </button>
+              
+              {/* Top Right Tags */}
+              <div className="absolute top-6 md:top-10 right-6 md:right-10 flex flex-col items-end gap-2 z-30">
+                {setup?.tags && setup.tags.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    {setup.tags.map((tag: any, idx: number) => {
+                      const colors = [
+                        "bg-blue-600/40 border-blue-400/30 text-blue-100",
+                        "bg-rose-600/40 border-rose-400/30 text-rose-100",
+                        "bg-purple-600/40 border-purple-400/30 text-purple-100",
+                        "bg-amber-600/40 border-amber-400/30 text-amber-100",
+                        "bg-emerald-600/40 border-emerald-400/30 text-emerald-100",
+                        "bg-cyan-600/40 border-cyan-400/30 text-cyan-100"
+                      ];
+                      const colorClass = colors[idx % colors.length];
+                      const tagName = typeof tag === 'string' ? tag : (tag.name || tag.text || "tag");
+                      return (
+                        <div key={idx} className={`px-2 py-1 backdrop-blur-xl rounded-lg text-[8px] md:text-[10px] font-black uppercase tracking-wider border shadow-lg flex items-center gap-1.5 ${colorClass}`}>
+                          <span className="opacity-60 text-[7px] md:text-[9px]">#</span>
+                          {tagName}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
               {/* Navigation Arrows - Centered horizontally at the bottom on mobile */}
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-0 md:left-auto md:translate-x-0 md:right-10 md:top-1/2 md:bottom-auto md:-translate-y-1/2 flex md:flex-col gap-3 md:gap-4 z-40">
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-0 md:left-auto md:translate-x-0 md:right-10 md:top-1/2 md:bottom-auto md:-translate-y-1/2 hidden md:flex md:flex-col gap-3 md:gap-4 z-40">
                 <button
                   onClick={(e) => { e.stopPropagation(); loadPrev(); }}
-                  className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white/20 hover:text-white/60 hover:bg-white/15 transition-all backdrop-blur-md"
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white hover:text-white/60 hover:bg-white/15 transition-all backdrop-blur-md"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="md:w-6 md:h-6"><path d="m18 15-6-6-6 6" /></svg>
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); loadNext(); }}
-                  className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white/20 hover:text-white/60 hover:bg-white/15 transition-all backdrop-blur-md"
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white hover:text-white/60 hover:bg-white/15 transition-all backdrop-blur-md"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="md:w-6 md:h-6"><path d="m6 9 6 6 6-6" /></svg>
                 </button>
@@ -499,7 +555,7 @@ export default function Home() {
                         src={setup?.user?.avatar || `https://api.dicebear.com/9.x/bottts/svg?seed=${setup?.user?.id || 'admin'}`}
                         className="w-5 h-5 rounded-full bg-white/10"
                       />
-                      <span className="text-xs font-bold tracking-tight">{setup?.user?.name || "Ahmed abdelhalim"}</span>
+                      <span className="text-xs font-black tracking-tight">{setup?.user?.name || "Ahmed abdelhalim"}</span>
                     </div>
                   </div>
 
@@ -527,7 +583,7 @@ export default function Home() {
                   )}
 
                   {setup?.text ? (
-                    <h2 className="text-2xl md:text-3xl font-bold leading-tight text-white max-w-lg">
+                    <h2 className="text-2xl md:text-3xl font-black leading-tight text-white max-w-lg neon-text">
                       {setup.text}
                     </h2>
                   ) : !setup ? (
@@ -539,7 +595,7 @@ export default function Home() {
               </AnimatePresence>
             </div>
 
-          </div>
+          </motion.div>
 
           <div className="hidden md:flex fixed bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xs md:max-w-[1750px] justify-center px-4 md:px-0 pointer-events-none">
             <div className="relative group w-full flex justify-center">
@@ -591,8 +647,36 @@ export default function Home() {
       </main>
 
       {/* Modals */}
-      <CreateSetupModal open={openCreate} onClose={() => setOpenCreate(false)} onCreated={() => { setOpenCreate(false); loadNext(); }} />
-      <AddPunchlineModal open={openAddPunchline} setupId={setup?.id || 0} onClose={() => setOpenAddPunchline(false)} onCreated={(newP) => { setPunchlines(prev => [...prev, newP]); setPIndex(punchlines.length); }} />
+      <CreateSetupModal
+        open={openCreate}
+        onClose={() => setOpenCreate(false)}
+        onCreated={(newSetup) => {
+          setOpenCreate(false);
+          const newItem: HistoryItem = { setup: newSetup, punchlines: [], cursor: null, pIndex: 0 };
+          setAllSetups(prev => [newItem, ...prev]);
+          setActiveIndex(0);
+        }}
+      />
+      <AddPunchlineModal
+        open={openAddPunchline}
+        setupId={setup?.id || 0}
+        onClose={() => setOpenAddPunchline(false)}
+        onCreated={(newP) => {
+          setAllSetups(prev => {
+            const next = [...prev];
+            if (next[activeIndex]) {
+              const updatedItem = {
+                ...next[activeIndex],
+                punchlines: [...next[activeIndex].punchlines, newP],
+                pIndex: next[activeIndex].punchlines.length // New punchline at the end
+              };
+              next[activeIndex] = updatedItem;
+            }
+            return next;
+          });
+          setOpenAddPunchline(false);
+        }}
+      />
     </div>
   );
 }
