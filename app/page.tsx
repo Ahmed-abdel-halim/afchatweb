@@ -66,6 +66,7 @@ export default function Home() {
   const [laughing, setLaughing] = useState(false);
   const [openAddPunchline, setOpenAddPunchline] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [touchStartPos, setTouchStartPos] = useState({ x: 0, y: 0 });
 
   const current = useMemo(() => punchlines[pIndex] ?? null, [punchlines, pIndex]);
 
@@ -333,23 +334,26 @@ export default function Home() {
       <main className="flex grow items-stretch md:items-center justify-center px-4 md:px-6 py-0 md:py-4 relative">
         <div className="relative w-full max-w-[1750px] flex flex-col md:flex-row items-stretch md:items-center justify-center">
           <motion.div
-            onPanEnd={(_, info) => {
-              const { offset, velocity } = info;
-              
-              // Thresholds: Lower values = more sensitive
-              const moveThreshold = 30;
-              const velocityThreshold = 100;
+            onTouchStart={(e) => {
+              setTouchStartPos({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+            }}
+            onTouchEnd={(e) => {
+              const dx = e.changedTouches[0].clientX - touchStartPos.x;
+              const dy = e.changedTouches[0].clientY - touchStartPos.y;
+              const absX = Math.abs(dx);
+              const absY = Math.abs(dy);
+              const threshold = 40;
 
-              // Horizontal Swipe (Rodoud)
-              if (Math.abs(offset.x) > moveThreshold || Math.abs(velocity.x) > velocityThreshold) {
-                if (offset.x > 0) prevP();
-                else nextP();
-              }
-              
-              // Vertical Swipe (Afshat)
-              if (Math.abs(offset.y) > moveThreshold || Math.abs(velocity.y) > velocityThreshold) {
-                if (offset.y > 0) loadPrev();
-                else loadNext();
+              if (Math.max(absX, absY) > threshold) {
+                if (absX > absY) {
+                  // Horizontal swipe (Rodoud)
+                  if (dx > 0) prevP();
+                  else nextP();
+                } else {
+                  // Vertical swipe (Afshat)
+                  if (dy > 0) loadPrev();
+                  else loadNext();
+                }
               }
             }}
             className="w-full flex-1 md:h-[82vh] flex flex-col md:grid md:grid-cols-2 gap-0 overflow-hidden md:rounded-[2.5rem] md:border md:border-white/60 md:shadow-2xl relative bg-transparent touch-none"
