@@ -309,16 +309,26 @@ export default function Home() {
           <motion.div
             onPanEnd={(_, info) => {
               const { offset, velocity } = info;
-              const threshold = 40;
-              const vThreshold = 100;
+              
+              // تحديد الاتجاه الأغلب للسحبة (أفقي أم رأسي)
+              const isHorizontal = Math.abs(offset.x) > Math.abs(offset.y);
+              
+              // تصغير القيم المطلوبة لالتقاط السحبات الصغيرة والكبيرة بذكاء
+              const minPan = 15; 
+              const minVelocity = 40;
 
-              if (Math.abs(offset.x) > threshold || Math.abs(velocity.x) > vThreshold) {
-                if (offset.x > 0) prevP();
-                else nextP();
-              }
-              if (Math.abs(offset.y) > threshold || Math.abs(velocity.y) > vThreshold) {
-                if (offset.y > 0) loadPrev();
-                else loadNext();
+              if (isHorizontal) {
+                // سحب يمين أو يسار لتغيير الردود
+                if (Math.abs(offset.x) > minPan || Math.abs(velocity.x) > minVelocity) {
+                  if (offset.x > 0) prevP();
+                  else nextP();
+                }
+              } else {
+                // سحب لأعلى أو لأسفل لتغيير القفشة
+                if (Math.abs(offset.y) > minPan || Math.abs(velocity.y) > minVelocity) {
+                  if (offset.y > 0) loadPrev();
+                  else loadNext();
+                }
               }
             }}
             className="w-full flex-1 md:h-[82vh] flex flex-col md:grid md:grid-cols-2 gap-0 overflow-hidden md:rounded-[2.5rem] md:border md:border-white/60 md:shadow-2xl relative bg-transparent touch-none"
