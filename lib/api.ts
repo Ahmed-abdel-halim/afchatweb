@@ -134,6 +134,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const res = await fetch(`${BASE}${path}`, {
       ...options,
       headers: {
+        "Accept": "application/json",
         ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(options.headers || {}),

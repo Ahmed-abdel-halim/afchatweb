@@ -13,13 +13,15 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html,
 body {
   background: var(--main-gradient);
   background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-cairo), system-ui, sans-serif;
-  overflow: hidden; /* Prevent scrolling as requested */
   min-height: 100vh;
+  height: auto !important;
+  overflow-y: visible !important;
 }
 
 /* Hide Scrollbar */
@@ -71,68 +73,73 @@ body {
 
 /* Animated Background Mesh - Brighter Pops */
 .mesh-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: -1;
-    overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
 }
 
 .mesh-blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(60px);
-    opacity: 0.5;
-    mix-blend-mode: screen;
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.5;
+  mix-blend-mode: screen;
 }
 
 @keyframes blob {
-    from { transform: translate(0, 0) scale(1); }
-    to { transform: translate(20px, 20px) scale(1.1); }
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+
+  to {
+    transform: translate(20px, 20px) scale(1.1);
+  }
 }
 
 .blob-1 {
-    background: #fee2e2;
-    width: 500px;
-    height: 500px;
-    top: -100px;
-    left: -100px;
-    animation: blob 20s infinite alternate;
+  background: #fee2e2;
+  width: 500px;
+  height: 500px;
+  top: -100px;
+  left: -100px;
+  animation: blob 20s infinite alternate;
 }
 
 .blob-2 {
-    background: #cffafe;
-    width: 600px;
-    height: 600px;
-    top: 20%;
-    right: -200px;
-    animation: blob 25s infinite alternate-reverse;
+  background: #cffafe;
+  width: 600px;
+  height: 600px;
+  top: 20%;
+  right: -200px;
+  animation: blob 25s infinite alternate-reverse;
 }
 
 .blob-3 {
-    background: #fef08a;
-    width: 400px;
-    height: 400px;
-    bottom: -50px;
-    left: 20%;
-    animation: blob 18s infinite alternate;
+  background: #fef08a;
+  width: 400px;
+  height: 400px;
+  bottom: -50px;
+  left: 20%;
+  animation: blob 18s infinite alternate;
 }
 
 .glass-panel {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(40px);
-    -webkit-backdrop-filter: blur(40px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
 }
 
 .neon-text {
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 #setup-container,
 #punchline-container {
-    transition: flex 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), background 0.5s ease;
+  transition: flex 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), background 0.5s ease;
 }

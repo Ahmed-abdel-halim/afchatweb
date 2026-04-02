@@ -5,8 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getFeed, postLaugh, postView, getMe } from "@/lib/api";
 import { getToken, clearToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import CreateSetupModal from "@/components/CreateSetupModal";
 import AddPunchlineModal from "@/components/AddPunchlineModal";
+import CommentsModal from "@/components/CommentsModal";
 
 // --- Types ---
 interface User {
@@ -21,6 +23,12 @@ interface Tag {
   name: string;
 }
 
+interface Comment {
+  id: number;
+  body: string;
+  user?: User;
+}
+
 interface Punchline {
   id: number;
   text: string;
@@ -30,6 +38,7 @@ interface Punchline {
   user_name?: string;
   user_avatar?: string;
   user?: User;
+  comments?: Comment[];
   media_type?: "text" | "image" | "video";
   media_url?: string;
 }
@@ -73,6 +82,7 @@ export default function Home() {
   const [laughing, setLaughing] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
   const [openAddPunchline, setOpenAddPunchline] = useState(false);
+  const [openComments, setOpenComments] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   // --- Derived ---
@@ -149,6 +159,11 @@ export default function Home() {
       setPunchlines(item.punchlines);
       setCursor(item.cursor);
       setPIndex(item.pIndex || 0);
+
+      // تحديث الرابط في المتصفح ليطابق الـ slug الحالي
+      if (item.setup?.slug) {
+        window.history.replaceState(null, '', `/p/${item.setup.slug}`);
+      }
     }
   }, [activeIndex, allSetups]);
 
@@ -310,22 +325,26 @@ export default function Home() {
             onPanEnd={(_, info) => {
               const { offset, velocity } = info;
               
-              // تحديد الاتجاه الأغلب للسحبة (أفقي أم رأسي)
-              const isHorizontal = Math.abs(offset.x) > Math.abs(offset.y);
-              
-              // تصغير القيم المطلوبة لالتقاط السحبات الصغيرة والكبيرة بذكاء
-              const minPan = 15; 
-              const minVelocity = 40;
+              // ذكاء اصطناعي: قياس مدى قوة الحركة واتجاهها
+              const absX = Math.abs(offset.x);
+              const absY = Math.abs(offset.y);
+              const absVX = Math.abs(velocity.x);
+              const absVY = Math.abs(velocity.y);
 
-              if (isHorizontal) {
-                // سحب يمين أو يسار لتغيير الردود
-                if (Math.abs(offset.x) > minPan || Math.abs(velocity.x) > minVelocity) {
+              // تقليل الحواجز جداً لجعلها حساسة لأي لمسة خفيفة أو سريعة
+              const minMovement = 8; // حساسية قصوى للمسافات القصيرة
+              const minSpeed = 25;    // حساسية قصوى للسرعات الخاطفة
+
+              // تحديد إذا كان المستخدم يقصد السحب أفقي (للردود) أم رأسي (للمواقف)
+              if (absX > absY) {
+                // سحبة أفقية ذكية (يمين أو شمال) في أي مكان بالبرنامج
+                if (absX > minMovement || absVX > minSpeed) {
                   if (offset.x > 0) prevP();
                   else nextP();
                 }
-              } else {
-                // سحب لأعلى أو لأسفل لتغيير القفشة
-                if (Math.abs(offset.y) > minPan || Math.abs(velocity.y) > minVelocity) {
+              } else if (absY > absX) {
+                // سحبة رأسية ذكية (فوق أو تحت) لتغيير الموقف
+                if (absY > minMovement || absVY > minSpeed) {
                   if (offset.y > 0) loadPrev();
                   else loadNext();
                 }
@@ -376,14 +395,24 @@ export default function Home() {
 
                 {/* Comments - Mobile Only */}
                 <div className="flex flex-col items-center md:hidden">
-                  <button className="w-12 h-12 flex items-center justify-center text-white drop-shadow-lg">
+                  <button 
+                    onClick={() => setOpenComments(true)}
+                    className="w-12 h-12 flex items-center justify-center text-white drop-shadow-lg"
+                  >
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                   </button>
                 </div>
               </div>
 
-              <AnimatePresence mode="wait">
-                <motion.div key={current?.id || 'loading'} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative z-10 text-center flex flex-col items-center px-6 md:px-24">
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.div 
+                  key={current?.id || 'loading'} 
+                  initial={{ opacity: 0, y: 15 }} 
+                  animate={{ opacity: 1, y: 0 }} 
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="relative z-10 text-center flex flex-col items-center px-6 md:px-24"
+                >
                   {current && (
                     <div className="flex items-center gap-3 mb-4 opacity-30">
                       <span className="text-xs font-black uppercase tracking-tight">الرد من: {current?.user?.name || current?.user_name || "Unknown"}</span>
@@ -438,30 +467,60 @@ export default function Home() {
                       ];
                       const colorClass = colors[idx % colors.length];
                       const tagName = typeof tag === 'string' ? tag : (tag.name || "tag");
+                      const tagSlug = typeof tag === 'string' ? tag : (tag.slug || tag.name || "tag");
+                      
                       return (
-                        <div key={idx} className={`px-2 py-1 backdrop-blur-md rounded-lg text-[8px] md:text-[10px] font-black uppercase tracking-wider border shadow-sm ${colorClass}`}>
+                        <Link 
+                          href={`/t/${tagSlug}`} 
+                          key={idx} 
+                          className={`px-2 py-1 backdrop-blur-md rounded-lg text-[8px] md:text-[10px] font-black uppercase tracking-wider border shadow-sm ${colorClass} hover:scale-105 transition-transform`}
+                        >
                           <span className="opacity-50">#</span> {tagName}
-                        </div>
+                        </Link>
                       );
                     })}
                   </div>
                 )}
               </div>
 
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-0 md:left-auto md:translate-x-0 md:right-10 md:top-1/2 md:bottom-auto md:-translate-y-1/2 hidden md:flex md:flex-col gap-4 z-40">
-                <button onClick={(e) => { e.stopPropagation(); loadPrev(); }} className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white hover:bg-white/20 transition-all backdrop-blur-md">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="md:w-6 md:h-6"><path d="m18 15-6-6-6 6" /></svg>
+              {/* Setup Navigation Arrows - Desktop Only, relying on Smart Swipes for Mobile */}
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-[10px] md:left-auto md:translate-x-0 md:right-10 md:top-1/2 md:bottom-auto md:-translate-y-1/2 hidden md:flex md:flex-col gap-4 z-40">
+                <button 
+                  title="الموقف السابق"
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    e.preventDefault();
+                    loadPrev(); 
+                  }} 
+                  className="w-12 h-12 md:w-14 md:h-14 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white hover:bg-white/15 active:scale-90 transition-all backdrop-blur-md"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6" /></svg>
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); loadNext(); }} className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white hover:bg-white/20 transition-all backdrop-blur-md">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="md:w-6 md:h-6"><path d="m6 9 6 6 6-6" /></svg>
+                <button 
+                  title="الموقف التالي"
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    e.preventDefault();
+                    loadNext(); 
+                  }} 
+                  className="w-12 h-12 md:w-14 md:h-14 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white hover:bg-white/15 active:scale-90 transition-all backdrop-blur-md"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                 </button>
               </div>
 
-              <AnimatePresence mode="wait">
-                <motion.div key={setup?.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative z-10 text-center flex flex-col items-center">
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.div 
+                  key={setup?.id || 'loading-setup'} 
+                  initial={{ opacity: 0, y: 15 }} 
+                  animate={{ opacity: 1, y: 0 }} 
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="relative z-10 text-center flex flex-col items-center w-full"
+                >
                   <div className="flex items-center gap-3 opacity-40 mb-3 md:mb-8">
                     <img src={setup?.user?.avatar || `https://api.dicebear.com/9.x/bottts/svg?seed=${setup?.user?.id}`} className="w-5 h-5 rounded-full" alt="avatar" />
-                    <span className="text-xs font-black tracking-tight">{setup?.user?.name || "Unknown"}</span>
+                    <span className="text-xs font-black tracking-tight">{setup?.user?.name || "Anonymous"}</span>
                   </div>
                   {setup?.media_type === "image" && setup?.media_url && (
                     <div className="mb-4 md:mb-6 w-full max-w-[200px] md:max-w-sm rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-black/40 flex items-center justify-center min-h-[80px]">
@@ -469,8 +528,8 @@ export default function Home() {
                     </div>
                   )}
                   {setup?.text ? (
-                    <h2 className="text-2xl md:text-3xl font-black leading-tight text-white max-w-lg neon-text">{setup.text}</h2>
-                  ) : <h2 className="text-2xl md:text-3xl font-bold leading-tight text-white opacity-20">...جاري التحميل</h2>}
+                    <h2 className="text-2xl md:text-3xl font-black leading-tight text-white max-w-lg neon-text select-text">{setup.text}</h2>
+                  ) : <h2 className="text-2xl md:text-3xl font-bold leading-tight text-white opacity-20 italic">...جاري البحث عن نكتة مسخرة</h2>}
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -479,19 +538,42 @@ export default function Home() {
           <div className="hidden md:flex fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-[1750px] justify-center pointer-events-none">
             <div className="relative flex items-center bg-black/60 backdrop-blur-2xl px-2 h-16 rounded-full border border-white/10 shadow-2xl min-w-[240px] pointer-events-auto">
               <div className="flex-1 flex justify-center">
-                <button className="w-11 h-11 rounded-full border border-white/5 flex items-center justify-center text-white/20 hover:text-white/60 transition-all">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                <button 
+                  onClick={() => setOpenComments(true)}
+                  className="w-11 h-11 rounded-full border border-white/5 flex items-center justify-center text-white/20 hover:text-white/60 transition-all hover:bg-white/5" 
+                  title="عرض التعليقات والمناقشة"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 </button>
               </div>
               <div className="relative flex justify-center w-20">
-                <motion.div animate={laughing ? { scale: [1, 1.2, 1] } : {}} onClick={laugh} className="absolute -top-11 w-20 h-20 bg-[#1A1D23] rounded-full p-1.5 shadow-2xl cursor-pointer">
+                <motion.div animate={laughing ? { scale: [1, 1.2, 1] } : {}} onClick={laugh} className="absolute -top-11 w-20 h-20 bg-[#1A1D23] rounded-full p-1.5 shadow-2xl cursor-pointer ring-4 ring-transparent hover:ring-white/10 transition-all">
                   <div className="w-full h-full bg-gradient-to-tr from-yellow-400 to-orange-500 rounded-full flex flex-col items-center justify-center border-4 border-[#1A1D23]">
                     <span className="text-3xl filter drop-shadow-md select-none">😂</span>
                   </div>
                 </motion.div>
               </div>
               <div className="flex-1 flex justify-center">
-                <button className="w-11 h-11 rounded-full border border-white/5 flex items-center justify-center text-white/20 hover:text-white/60 transition-all">
+                <button 
+                  onClick={async () => {
+                    const url = `${window.location.origin}/p/${setup?.slug}`;
+                    const title = `أفشة من ${setup?.user?.name || 'أفشات'}`;
+                    const text = `شوف القفشة دي: "${setup?.text}"`;
+
+                    if (navigator.share) {
+                      try {
+                        await navigator.share({ title, text, url });
+                      } catch (err) {
+                        // user cancelled or share failed
+                      }
+                    } else {
+                      navigator.clipboard.writeText(url);
+                      alert("يا مسهل! اللينك اتنسخ خلاص، شيره وفطسهم من الضحك.");
+                    }
+                  }}
+                  className="w-11 h-11 rounded-full border border-white/5 flex items-center justify-center text-white/20 hover:text-white/60 transition-all hover:bg-white/5" 
+                  title="نسخ رابط الضحكة"
+                >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
                 </button>
               </div>
@@ -528,6 +610,41 @@ export default function Home() {
           setOpenAddPunchline(false);
         }}
       />
+      
+      {current && (
+        <CommentsModal
+          open={openComments}
+          punchlineId={current.id}
+          comments={current.comments || []}
+          loggedIn={loggedIn}
+          onClose={() => setOpenComments(false)}
+          onCommentAdded={(newComment: any) => {
+            setAllSetups(prev => {
+                const next = [...prev];
+                if (next[activeIndex]) {
+                    const activeS = { ...next[activeIndex] };
+                    const nextP = [...activeS.punchlines];
+                    const targetP = { ...nextP[activeS.pIndex] };
+                    targetP.comments = [...(targetP.comments || []), newComment];
+                    nextP[activeS.pIndex] = targetP;
+                    activeS.punchlines = nextP;
+                    next[activeIndex] = activeS;
+                }
+                return next;
+            });
+            // تحديث مصفوفة الـ punchlines الحالية فوراً
+            setPunchlines(prev => {
+                const next = [...prev];
+                if (next[pIndex]) {
+                  const targetP = { ...next[pIndex] };
+                  targetP.comments = [...(targetP.comments || []), newComment];
+                  next[pIndex] = targetP;
+                }
+                return next;
+            });
+          }}
+        />
+      )}
     </div>
   );
 }
