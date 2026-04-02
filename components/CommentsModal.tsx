@@ -70,7 +70,7 @@ export default function CommentsModal({ open, onClose, punchlineId, comments, on
               )}
             </div>
             
-            <div className="p-6 bg-[#0D0F14] border-t border-white/5 z-20">
+            <div className="px-5 pt-8 pb-14 md:p-6 bg-[#161922] border-t border-white/5 z-20">
               <form onSubmit={handleSubmit} className="flex gap-3 items-end">
                 <input value={body} onChange={e => setBody(e.target.value)} placeholder={loggedIn ? "اكتب تعليقك الساخر..." : "سجل دخول للمناقشة"} disabled={!loggedIn || loading} className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-purple-500/50 outline-none transition placeholder:text-white/10" />
                 <button type="submit" disabled={!loggedIn || loading || !body.trim()} className="h-14 w-14 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center font-black shadow-lg hover:shadow-purple-500/20 active:scale-95 transition disabled:opacity-50 group">
