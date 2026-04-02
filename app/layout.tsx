@@ -1,26 +1,38 @@
 import type { Metadata } from "next";
-import { Cairo, Geist, Geist_Mono } from "next/font/google";
+import { Cairo } from "next/font/google";
 import "./globals.css";
 
 const cairo = Cairo({
-  subsets: ["arabic"],
-  weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
+  subsets: ["arabic", "latin"],
+  weight: ["200", "300", "400", "500", "600", "700", "800", "900", "1000"],
   variable: "--font-cairo",
 });
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "أفشات - تجربة الأفشات الكاملة",
-  description: "أول منصة لمشاركة الأفشات والمواقف الكوميدية والتريندات.",
+  title: "أفشات - Afchat.fun | أقوى قفشات وبانشلاين الردود العربية",
+  description: "اكتشف وشارك أقوى الردود الساخرة والقفشات المضحكة في الوطن العربي. منصة أفشات لأفضل الكوميديا العربية.",
+  openGraph: {
+    title: "أفشات - Afchat.fun",
+    description: "أقوى منصة للقفشات والردود العربية الساخرة",
+    url: "https://afchat.fun",
+    siteName: "أفشات",
+    images: [
+      {
+        url: "https://afchat.fun/api/og?setup=أفشات&punchline=أقوى قفشات والردود العربية",
+        width: 1200,
+        height: 630,
+        alt: "أفشات - Afchat.fun",
+      },
+    ],
+    locale: "ar_SA",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "أفشات - Afchat.fun",
+    description: "أقوى منصة للقفشات والردود العربية الساخرة",
+    images: ["https://afchat.fun/api/og?setup=أفشات&punchline=أقوى قفشات والردود العربية"],
+  },
 };
 
 export default function RootLayout({
@@ -31,7 +43,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <body
-        className={`${cairo.variable} ${geistSans.variable} ${geistMono.variable} font-[family-name:var(--font-cairo)] antialiased`}
+        className={`${cairo.variable} font-[family-name:var(--font-cairo)] antialiased`}
       >
         {children}
       </body>

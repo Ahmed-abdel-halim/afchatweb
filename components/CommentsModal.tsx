@@ -33,9 +33,9 @@ export default function CommentsModal({ open, onClose, punchlineId, comments, on
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[250] flex items-end md:items-center justify-center p-0 md:p-4">
+        <div className="fixed inset-0 z-[250] flex items-center md:items-center justify-center p-4 md:p-4">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-[#0D0F14]/90 backdrop-blur-md" />
-          <motion.div initial={{ y: "100%", scale: 0.95 }} animate={{ y: 0, scale: 1 }} exit={{ y: "100%", scale: 0.95 }} className="relative w-full max-w-xl bg-[#161922] border-t md:border border-white/10 rounded-t-[2.5rem] md:rounded-[2.5rem] shadow-[0_-20px_80px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col h-[80vh] md:h-[550px]">
+          <motion.div initial={{ y: "20%", opacity: 0, scale: 0.9 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: "20%", opacity: 0, scale: 0.9 }} className="relative w-full max-w-xl bg-[#161922] border border-white/10 rounded-[2.5rem] shadow-[0_-20px_80px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col h-[85vh] md:h-[550px]">
             {/* Ambient Ambient Glows */}
             <div className="absolute top-0 right-0 w-40 h-40 bg-purple-600/10 blur-[80px] pointer-events-none rounded-full" />
             
@@ -70,13 +70,25 @@ export default function CommentsModal({ open, onClose, punchlineId, comments, on
               )}
             </div>
             
-            <div className="px-5 pt-8 pb-14 md:p-6 bg-[#161922] border-t border-white/5 z-20">
-              <form onSubmit={handleSubmit} className="flex gap-3 items-end">
-                <input value={body} onChange={e => setBody(e.target.value)} placeholder={loggedIn ? "اكتب تعليقك الساخر..." : "سجل دخول للمناقشة"} disabled={!loggedIn || loading} className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-purple-500/50 outline-none transition placeholder:text-white/10" />
-                <button type="submit" disabled={!loggedIn || loading || !body.trim()} className="h-14 w-14 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center font-black shadow-lg hover:shadow-purple-500/20 active:scale-95 transition disabled:opacity-50 group">
-                  {loading ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 group-hover:-translate-y-1 transition duration-300"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>}
-                </button>
-              </form>
+            <div className="px-4 py-4 pb-10 md:p-6 bg-[#161922] border-t border-white/5 z-20">
+                <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-2 pr-4 shadow-2xl">
+                    <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+                        <input 
+                            value={body} 
+                            onChange={e => setBody(e.target.value)} 
+                            placeholder={loggedIn ? "اكتب تعليقك الساخر..." : "سجل دخول للمناقشة"} 
+                            disabled={!loggedIn || loading} 
+                            className="flex-1 bg-transparent border-none rounded-2xl px-2 py-3 text-sm outline-none transition placeholder:text-white/20" 
+                        />
+                        <button 
+                            type="submit" 
+                            disabled={!loggedIn || loading || !body.trim()} 
+                            className="h-12 w-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center font-black shadow-lg hover:shadow-purple-500/20 active:scale-95 transition disabled:opacity-50 group flex-shrink-0"
+                        >
+                            {loading ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 group-hover:-translate-y-1 transition duration-300"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>}
+                        </button>
+                    </form>
+                </div>
             </div>
           </motion.div>
         </div>
