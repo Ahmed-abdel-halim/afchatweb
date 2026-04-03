@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     siteName: "أفشات",
     images: [
       {
-        url: "https://afchat.fun/api/og?setup=أفشات&punchline=أقوى قفشات والردود العربية",
+        url: "https://afchat.fun/api/og?setup=أفشات&punchline=أقوى قفشات والردود العربية&v=1.1",
         width: 1200,
         height: 630,
         alt: "أفشات - Afchat.fun",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "أفشات - Afchat.fun",
     description: "أقوى منصة للقفشات والردود العربية الساخرة",
-    images: ["https://afchat.fun/api/og?setup=أفشات&punchline=أقوى قفشات والردود العربية"],
+    images: ["https://afchat.fun/api/og?setup=أفشات&punchline=أقوى قفشات والردود العربية&v=1.1"],
   },
 };
 

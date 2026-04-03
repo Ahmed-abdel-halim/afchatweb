@@ -11,7 +11,14 @@ const fontCairo = fetch(
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const fontData = await fontCairo;
+    
+    // Optional Font Data with silent fail
+    let fontData: ArrayBuffer | null = null;
+    try {
+      fontData = await fontCairo;
+    } catch (e) {
+      console.warn("Font loading failed, falling back to system font");
+    }
 
     // Get parameters
     const hasSetup = searchParams.has("setup");
@@ -105,13 +112,13 @@ export async function GET(request: NextRequest) {
       {
         width: 1200,
         height: 630,
-        fonts: [
+        fonts: fontData ? [
           {
             name: "Cairo",
             data: fontData,
             style: "normal",
           },
-        ],
+        ] : [],
       }
     );
   } catch (e: any) {
