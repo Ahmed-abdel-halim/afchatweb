@@ -7,13 +7,11 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     
-    // Get parameters
     let setup = searchParams.get("setup") || "";
     let punchline = searchParams.get("punchline") || "أفضل المواقف والقفشات";
     const slug = searchParams.get("slug");
     const id = searchParams.get("id");
 
-    // Fetch from API with Timeout
     if (id || slug) {
       try {
         const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://afchat.fun";

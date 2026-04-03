@@ -88,7 +88,6 @@ export default function SetupInteractive({ setup: serverSetup }: { setup: Setup 
 
   return (
     <div className="w-full min-h-screen bg-transparent text-white font-cairo selection:bg-purple-500/30 relative py-1 md:py-4">
-      {/* Background System - FIXED to stay back while scrolling */}
       <div className="mesh-bg pointer-events-none fixed inset-0 z-0 h-screen w-screen overflow-hidden">
         <div className="mesh-blob blob-1" />
         <div className="mesh-blob blob-2" />
@@ -104,7 +103,6 @@ export default function SetupInteractive({ setup: serverSetup }: { setup: Setup 
         </header>
 
         <main className="space-y-6 pb-16 text-right">
-          {/* SETUP CARD */}
           <div className="w-full bg-[#161922]/70 backdrop-blur-3xl border border-white/10 rounded-[2rem] p-6 md:p-10 relative overflow-hidden shadow-2xl">
             <div className="absolute top-0 right-0 w-48 h-48 bg-purple-600/10 blur-[80px] rounded-full pointer-events-none" />
 
@@ -122,7 +120,6 @@ export default function SetupInteractive({ setup: serverSetup }: { setup: Setup 
             </div>
           </div>
 
-          {/* PUNCHLINE CARD */}
           <div className="w-full bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2rem] p-6 md:p-10 relative shadow-2xl">
             <div className="absolute top-0 left-0 w-32 h-32 bg-orange-600/10 blur-[60px] rounded-full pointer-events-none" />
 
@@ -146,7 +143,6 @@ export default function SetupInteractive({ setup: serverSetup }: { setup: Setup 
                   </div>
                 </div>
 
-                {/* COMMENTS LIST */}
                 <div className="mt-12 pt-8 border-t border-white/5 space-y-6">
                   <div className="flex items-center justify-between">
                     <h4 className="font-black text-sm uppercase tracking-widest text-white">المناقشة</h4>

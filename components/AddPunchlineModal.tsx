@@ -60,11 +60,9 @@ export default function AddPunchlineModal({ open, onClose, setupId, onCreated }:
             exit={{ opacity: 0, scale: 0.95, y: 30 }}
             className="relative w-full max-w-lg bg-[#161922] border border-white/10 rounded-[2rem] shadow-[0_40px_100px_rgba(0,0,0,0.6)] overflow-hidden"
           >
-            {/* Ambient Background Glows */}
             <div className="absolute -top-24 -right-24 w-60 h-60 bg-purple-600/10 blur-[100px] rounded-full pointer-events-none" />
             <div className="absolute -bottom-24 -left-24 w-60 h-60 bg-blue-600/10 blur-[100px] rounded-full pointer-events-none" />
 
-            {/* Header Section */}
             <div className="relative p-3 md:p-5 pb-2 border-b border-white/5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 md:gap-3">
@@ -82,10 +80,8 @@ export default function AddPunchlineModal({ open, onClose, setupId, onCreated }:
               </div>
             </div>
 
-            {/* Form Body */}
             <form onSubmit={handleSubmit} className="relative p-3 md:p-5 pt-3 md:pt-4 pb-0 space-y-2 md:space-y-4">
 
-              {/* Custom Segmented Control */}
               <div className="space-y-3">
                 <label className="text-[10px] font-black uppercase tracking-[0.25em] text-white/20 px-4">نوع الرد</label>
                 <div className="flex p-1.5 bg-black/40 rounded-[1.5rem] border border-white/5 relative">
@@ -114,7 +110,6 @@ export default function AddPunchlineModal({ open, onClose, setupId, onCreated }:
                 </div>
               </div>
 
-              {/* Dynamic Input Area */}
               <div className="space-y-3 md:space-y-4">
                 {mediaType === "text" ? (
                   <div className="relative group">
@@ -154,7 +149,7 @@ export default function AddPunchlineModal({ open, onClose, setupId, onCreated }:
                           src={URL.createObjectURL(mediaFile)}
                           className="w-full h-full object-cover transition duration-500 group-hover:scale-110"
                           alt="Preview"
-                          onLoad={() => URL.revokeObjectURL(URL.createObjectURL(mediaFile))} // basic cleanup, not perfect but helps memory
+                          onLoad={() => URL.revokeObjectURL(URL.createObjectURL(mediaFile))} 
                           onError={(e) => {
                             setError("عذراً، الملف غير صالح");
                             e.currentTarget.src = "https://placehold.co/600x400/1A1D23/FFFFFF?text=%D8%A7%D9%84%D8%B5%D9%88%D8%B1%D8%A9+%D8%BA%D9%8A%D8%B1+%D9%85%D8%AA%D8%A7%D8%AD%D8%A9";
@@ -179,7 +174,6 @@ export default function AddPunchlineModal({ open, onClose, setupId, onCreated }:
                 </motion.div>
               )}
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
@@ -199,7 +193,6 @@ export default function AddPunchlineModal({ open, onClose, setupId, onCreated }:
               </button>
             </form>
 
-            {/* Fine decoration */}
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
           </motion.div>
         </div>

@@ -36,7 +36,6 @@ export default function CommentsModal({ open, onClose, punchlineId, comments, on
         <div className="fixed inset-0 z-[250] flex items-center md:items-center justify-center p-4 md:p-4">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-[#0D0F14]/90 backdrop-blur-md" />
           <motion.div initial={{ y: "20%", opacity: 0, scale: 0.9 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: "20%", opacity: 0, scale: 0.9 }} className="relative w-full max-w-xl bg-[#161922] border border-white/10 rounded-[2.5rem] shadow-[0_-20px_80px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col h-[85vh] md:h-[550px]">
-            {/* Ambient Ambient Glows */}
             <div className="absolute top-0 right-0 w-40 h-40 bg-purple-600/10 blur-[80px] pointer-events-none rounded-full" />
             
             <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/5 z-10">

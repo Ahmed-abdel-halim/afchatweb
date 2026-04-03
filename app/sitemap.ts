@@ -5,7 +5,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://afchat.fun";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const sitemapData = await fetch(`${API_BASE}/api/sitemap`, {
-    next: { revalidate: 3600 }, // Revalidate every hour
+    next: { revalidate: 3600 }, 
   })
     .then((res) => (res.ok ? res.json() : { setups: [], tags: [] }))
     .catch(() => ({ setups: [], tags: [] }));

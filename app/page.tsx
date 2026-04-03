@@ -10,7 +10,6 @@ import CreateSetupModal from "@/components/CreateSetupModal";
 import AddPunchlineModal from "@/components/AddPunchlineModal";
 import CommentsModal from "@/components/CommentsModal";
 
-// --- Types ---
 interface User {
   id: number;
   name: string;
@@ -63,7 +62,6 @@ interface HistoryItem {
 export default function Home() {
   const router = useRouter();
 
-  // --- States ---
   const [allSetups, setAllSetups] = useState<HistoryItem[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [setup, setSetup] = useState<Setup | null>(null);
@@ -85,10 +83,8 @@ export default function Home() {
   const [openComments, setOpenComments] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  // --- Derived ---
   const current = useMemo(() => punchlines[pIndex] ?? null, [punchlines, pIndex]);
 
-  // --- Navigation Logic ---
   const nextP = useCallback(() => {
     if (punchlines.length > 0) {
       setPIndex(prev => (prev + 1) % punchlines.length);
@@ -151,7 +147,6 @@ export default function Home() {
     }
   }, [activeIndex, allSetups.length]);
 
-  // --- Effects ---
   useEffect(() => {
     if (activeIndex >= 0 && allSetups[activeIndex]) {
       const item = allSetups[activeIndex];
@@ -160,7 +155,6 @@ export default function Home() {
       setCursor(item.cursor);
       setPIndex(item.pIndex || 0);
 
-      // تحديث الرابط في المتصفح ليطابق الـ slug الحالي
       if (item.setup?.slug) {
         window.history.replaceState(null, '', `/p/${item.setup.slug}`);
       }
@@ -177,7 +171,7 @@ export default function Home() {
         else if (res) setUser(res as any);
       }).catch(() => {});
     }
-  }, []); // eslint-disable-line
+  }, []); 
 
   useEffect(() => {
     if (current?.id) {
@@ -203,7 +197,6 @@ export default function Home() {
           setEndReached(true);
         }
       } catch (e) {
-        // failed
       } finally {
         setPrefetching(false);
       }
@@ -211,7 +204,6 @@ export default function Home() {
     fillBuffer();
   }, [buffer.length, nextCursor, prefetching, loadingSetup, endReached]);
 
-  // --- Actions ---
   async function laugh() {
     if (!current?.id) return;
     setLaughing(true);
@@ -325,25 +317,20 @@ export default function Home() {
             onPanEnd={(_, info) => {
               const { offset, velocity } = info;
               
-              // ذكاء اصطناعي: قياس مدى قوة الحركة واتجاهها
               const absX = Math.abs(offset.x);
               const absY = Math.abs(offset.y);
               const absVX = Math.abs(velocity.x);
               const absVY = Math.abs(velocity.y);
 
-              // تقليل الحواجز جداً لجعلها حساسة لأي لمسة خفيفة أو سريعة
-              const minMovement = 8; // حساسية قصوى للمسافات القصيرة
-              const minSpeed = 25;    // حساسية قصوى للسرعات الخاطفة
+              const minMovement = 8; 
+              const minSpeed = 25;    
 
-              // تحديد إذا كان المستخدم يقصد السحب أفقي (للردود) أم رأسي (للمواقف)
               if (absX > absY) {
-                // سحبة أفقية ذكية (يمين أو شمال) في أي مكان بالبرنامج
                 if (absX > minMovement || absVX > minSpeed) {
                   if (offset.x > 0) prevP();
                   else nextP();
                 }
               } else if (absY > absX) {
-                // سحبة رأسية ذكية (فوق أو تحت) لتغيير الموقف
                 if (absY > minMovement || absVY > minSpeed) {
                   if (offset.y > 0) loadPrev();
                   else loadNext();
@@ -352,9 +339,7 @@ export default function Home() {
             }}
             className="w-full flex-1 md:h-[82vh] flex flex-col md:grid md:grid-cols-2 gap-0 overflow-hidden md:rounded-[2.5rem] md:border md:border-white/60 md:shadow-2xl relative bg-transparent touch-none"
           >
-            {/* PUNCHLINE PANE */}
             <div id="punchline-container" className="bg-transparent relative flex flex-col justify-center px-6 md:px-12 pt-10 md:pt-16 pb-20 md:pb-24 overflow-hidden order-2 md:order-1 md:border-r md:border-white/60 flex-1">
-              {/* Vibrant Spotlight Glows for Punchline */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/40 blur-[120px] rounded-full pointer-events-none z-0" />
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-purple-400/30 blur-[80px] rounded-full pointer-events-none z-0" />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(99,102,241,0.25),_transparent_75%)] pointer-events-none z-0" />
@@ -386,7 +371,6 @@ export default function Home() {
                   <span className="text-[11px] md:text-sm font-black text-white -mt-1">{Math.floor((current?.laughs || 0) / 10)}%</span>
                 </div>
 
-                {/* Share - Mobile Only */}
                 <div className="flex flex-col items-center md:hidden">
                   <button 
                     onClick={async () => {
@@ -398,14 +382,12 @@ export default function Home() {
                         try {
                           await navigator.share({ title, text, url });
                         } catch (err) {
-                          // share failed or cancelled
                         }
                       } else {
                         try {
                           await navigator.clipboard.writeText(url);
                           alert("اللينك اتنسخ يا محارب.. شيره وفطسهم ضحك! 🚀");
                         } catch (err) {
-                          // clipboard failed
                         }
                       }
                     }}
@@ -415,7 +397,6 @@ export default function Home() {
                   </button>
                 </div>
 
-                {/* Comments - Mobile Only */}
                 <div className="flex flex-col items-center md:hidden">
                   <button 
                     onClick={() => setOpenComments(true)}
@@ -450,7 +431,6 @@ export default function Home() {
                     <h2 className="text-2xl md:text-3xl font-black leading-tight text-white mb-2 max-w-lg neon-text">{current.text}</h2>
                   ) : <h2 className="text-2xl md:text-3xl font-bold leading-tight text-white opacity-20">لا توجد ردود بعد</h2>}
 
-                  {/* Desktop Only: Rodoud Navigation Arrows */}
                   <div className="absolute left-1/2 -translate-x-1/2 bottom-[-80px] hidden md:flex items-center gap-4 z-40">
                     <button onClick={prevP} className="w-12 h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white hover:bg-white/15 transition-all backdrop-blur-md">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="rotate-180"><path d="m9 18 6-6-6-6" /></svg>
@@ -464,9 +444,7 @@ export default function Home() {
               </AnimatePresence>
             </div>
 
-            {/* SETUP PANE */}
             <div id="setup-container" className="bg-gradient-to-b from-[#4b1088] via-[#240b4a] to-[#0d0216] relative flex flex-col justify-center px-6 md:px-12 pt-10 md:pt-16 pb-12 md:pb-24 overflow-hidden order-1 md:order-2 md:border-l md:border-white/60 flex-1">
-              {/* Intense Central Glow for Setup */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/40 blur-[140px] rounded-full pointer-events-none z-0" />
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-indigo-500/30 blur-[100px] rounded-full pointer-events-none z-0" />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(139,92,246,0.3),_transparent_75%)] pointer-events-none z-0" />
@@ -505,7 +483,6 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Setup Navigation Arrows - Desktop Only, relying on Smart Swipes for Mobile */}
               <div className="absolute left-1/2 -translate-x-1/2 bottom-[10px] md:left-auto md:translate-x-0 md:right-10 md:top-1/2 md:bottom-auto md:-translate-y-1/2 hidden md:flex md:flex-col gap-4 z-40">
                 <button 
                   title="الموقف السابق"
@@ -586,7 +563,6 @@ export default function Home() {
                       try {
                         await navigator.share({ title, text, url });
                       } catch (err) {
-                        // user cancelled or share failed
                       }
                     } else {
                       navigator.clipboard.writeText(url);
@@ -654,7 +630,6 @@ export default function Home() {
                 }
                 return next;
             });
-            // تحديث مصفوفة الـ punchlines الحالية فوراً
             setPunchlines(prev => {
                 const next = [...prev];
                 if (next[pIndex]) {

@@ -24,13 +24,10 @@ body {
   overflow-y: visible !important;
 }
 
-/* Hide Scrollbar */
 ::-webkit-scrollbar {
   display: none;
 }
 
-
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -48,7 +45,6 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Fade In Animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -71,7 +67,6 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Animated Background Mesh - Brighter Pops */
 .mesh-bg {
   position: absolute;
   top: 0;
