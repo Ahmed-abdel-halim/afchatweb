@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
               maxWidth: "1000px",
             }}
           >
-            <div style={{ fontSize: 56, fontWeight: 900, color: "white", marginBottom: 30, direction: "rtl", display: "flex" }}>
+           <div style={{ fontSize: 56, fontWeight: 900, color: "white", marginBottom: 30, direction: "rtl", display: "flex" }}>
               "{setup}"
             </div>
             <div style={{ fontSize: 42, fontWeight: 700, color: "#ffca28", background: "rgba(255, 202, 40, 0.1)", padding: "20px 40px", borderRadius: "24px", direction: "rtl", display: "flex" }}>
