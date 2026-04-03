@@ -21,12 +21,29 @@ export async function GET(request: NextRequest) {
     }
 
     // Get parameters
-    const hasSetup = searchParams.has("setup");
-    const setup = hasSetup
-      ? searchParams.get("setup")?.slice(0, 100)
-      : "الموقف غير متوفر";
-      
-    const punchline = searchParams.get("punchline")?.slice(0, 100) || "أفضل المواقف والقفشات";
+    let setup = searchParams.get("setup") || "";
+    let punchline = searchParams.get("punchline") || "أفضل المواقف والقفشات";
+    const slug = searchParams.get("slug");
+
+    // Fetch from API if slug is provided (Cleaner URL for social bots)
+    if (slug) {
+      try {
+        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+        const res = await fetch(`${API_BASE}/api/setups/${encodeURIComponent(slug)}`);
+        if (res.ok) {
+          const json = await res.json();
+          const data = json.data ?? json;
+          setup = data.text;
+          const topP = data.punchlines?.sort((a:any, b:any) => b.laughs - a.laughs)[0];
+          punchline = topP ? topP.text : punchline;
+        }
+      } catch (e) {
+        console.error("Failed to fetch setup for OG image", e);
+      }
+    }
+
+    setup = setup.slice(0, 100) || "الموقف غير متوفر";
+    punchline = punchline.slice(0, 100);
 
     return new ImageResponse(
       (

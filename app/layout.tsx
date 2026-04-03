@@ -31,8 +31,14 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "أفشات - Afchat.fun",
     description: "أقوى منصة للقفشات والردود العربية الساخرة",
-    images: ["https://afchat.fun/api/og?setup=أفشات&punchline=أقوى قفشات والردود العربية&v=1.1"],
+    images: ["https://afchat.fun/api/og?setup=أفشات&punchline=أقوى قفشات والردود العربية&v=1.3"],
   },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

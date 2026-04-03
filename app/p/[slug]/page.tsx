@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const description = topPunchline ? topPunchline.text : "أفضل قفشات ومواقف أفشات";
   const title = `${setup.text} | أفشات`;
   
-  const ogImageUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://afchat.fun"}/api/og?setup=${encodeURIComponent(setup.text)}&punchline=${encodeURIComponent(description)}&v=1.1`;
+  const ogImageUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://afchat.fun"}/api/og?slug=${encodeURIComponent(slug)}&v=1.3`;
 
   return {
     title,
