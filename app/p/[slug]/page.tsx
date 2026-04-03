@@ -42,7 +42,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const description = topPunchline ? topPunchline.text : "أفضل قفشات ومواقف أفشات";
   const title = `${setup.text} | أفشات`;
   
-  const ogImageUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://afchat.fun"}/api/og?slug=${encodeURIComponent(slug)}&v=1.3`;
+  // Use numeric ID for the image URL to be totally ASCII/English
+  const ogImageUrl = `https://afchat.fun/api/og?id=${setup.id}&v=1.5`;
 
   return {
     title,
@@ -50,12 +51,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     openGraph: {
       title,
       description,
+      url: `https://afchat.fun/p/${setup.slug}`,
+      siteName: "أفشات",
       images: [
         {
           url: ogImageUrl,
           width: 1200,
           height: 630,
           alt: title,
+          type: "image/png",
         },
       ],
       type: "article",
@@ -66,8 +70,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description,
       images: [ogImageUrl],
     },
+    other: {
+      "og:image:secure_url": ogImageUrl,
+      "og:image:type": "image/png",
+      "og:image:width": "1200",
+      "og:image:height": "630",
+    },
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_APP_URL || "https://afchat.fun"}/p/${setup.slug}`,
+      canonical: `https://afchat.fun/p/${setup.slug}`,
     },
   };
 }

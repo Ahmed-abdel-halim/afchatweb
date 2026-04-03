@@ -24,12 +24,18 @@ export async function GET(request: NextRequest) {
     let setup = searchParams.get("setup") || "";
     let punchline = searchParams.get("punchline") || "أفضل المواقف والقفشات";
     const slug = searchParams.get("slug");
+    const id = searchParams.get("id");
 
-    // Fetch from API if slug is provided (Cleaner URL for social bots)
-    if (slug) {
+    // Fetch from API if ID or slug is provided (Cleaner URL for social bots)
+    if (id || slug) {
       try {
         const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
-        const res = await fetch(`${API_BASE}/api/setups/${encodeURIComponent(slug)}`);
+        // Try fetch by ID first (more robust), then by slug
+        const fetchUrl = id 
+          ? `${API_BASE}/api/setups-by-id/${id}` 
+          : `${API_BASE}/api/setups/${encodeURIComponent(slug || "")}`;
+          
+        const res = await fetch(fetchUrl);
         if (res.ok) {
           const json = await res.json();
           const data = json.data ?? json;
@@ -42,7 +48,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    setup = setup.slice(0, 100) || "الموقف غير متوفر";
+    setup = setup.slice(0, 100) || "أفشات - Afchat.fun";
     punchline = punchline.slice(0, 100);
 
     return new ImageResponse(
