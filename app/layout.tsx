@@ -41,6 +41,8 @@ export const viewport = {
   maximumScale: 1,
 };
 
+import { GoogleAnalytics } from "@next/third-parties/google";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -48,27 +50,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl">
-      <head>
-        <script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-Z42NHFBSQ"
-        ></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-Z42NHFBSQ');
-            `,
-          }}
-        />
-      </head>
+      <head />
       <body
         className={`${cairo.variable} font-[family-name:var(--font-cairo)] antialiased`}
       >
         {children}
       </body>
+      <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || "G-Z42NHFBSQ"} />
     </html>
   );
 }
