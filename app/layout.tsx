@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 
 const cairo = Cairo({
@@ -50,19 +49,20 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <head>
-        <Script
+        <script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-Z42NHFBSQ"
+        ></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-Z42NHFBSQ');
+            `,
+          }}
         />
-        <Script id="google-analytics">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', 'G-Z42NHFBSQ');
-          `}
-        </Script>
       </head>
       <body
         className={`${cairo.variable} font-[family-name:var(--font-cairo)] antialiased`}
