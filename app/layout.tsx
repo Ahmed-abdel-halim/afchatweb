@@ -41,7 +41,7 @@ export const viewport = {
   maximumScale: 1,
 };
 
-import { GoogleAnalytics } from "@next/third-parties/google";
+import Script from "next/script";
 
 export default function RootLayout({
   children,
@@ -54,9 +54,25 @@ export default function RootLayout({
       <body
         className={`${cairo.variable} font-[family-name:var(--font-cairo)] antialiased`}
       >
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-RSXR5WSVFT"
+          strategy="afterInteractive"
+        />
+        
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-RSXR5WSVFT', {
+              page_path: window.location.pathname,
+            });
+          `}
+        </Script>
+
         {children}
       </body>
-      <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || "G-Z42NHFBSQ"} />
     </html>
   );
 }
