@@ -1,12 +1,41 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 
-// VPS stability test - No external fetches
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const setup = searchParams.get("setup") || "أفشات";
-    const punchline = searchParams.get("punchline") || "Afchat.fun";
+    
+    let setup = searchParams.get("setup") || "أفشات";
+    let punchline = searchParams.get("punchline") || "Afchat.fun";
+    const id = searchParams.get("id");
+
+    // Fetch data safely if ID is provided
+    if (id) {
+      try {
+        const res = await fetch(`https://api.afchat.fun/api/setups-by-id/${id}`, {
+          next: { revalidate: 60 },
+          signal: AbortSignal.timeout(2000), // Max 2 seconds wait
+        });
+        
+        if (res.ok) {
+          const json = await res.json();
+          const data = json.data ?? json;
+          if (data && data.text) {
+            setup = data.text;
+            if (data.punchlines && data.punchlines.length > 0) {
+              const sorted = [...data.punchlines].sort((a, b) => (b.laughs || 0) - (a.laughs || 0));
+              punchline = sorted[0].text;
+            }
+          }
+        }
+      } catch (e) {
+        console.log("Safe fallback triggered for OG data");
+      }
+    }
+
+    // Clean text
+    setup = setup.length > 80 ? setup.slice(0, 80) + "..." : setup;
+    punchline = punchline.length > 80 ? punchline.slice(0, 80) + "..." : punchline;
 
     return new ImageResponse(
       (
@@ -19,12 +48,21 @@ export async function GET(request: NextRequest) {
             alignItems: "center",
             justifyContent: "center",
             backgroundColor: "#0d0216",
+            backgroundImage: "radial-gradient(circle at center, #4b1088 0%, #0d0216 100%)",
+            padding: "60px",
             color: "white",
             textAlign: "center",
           }}
         >
-          <div style={{ fontSize: 60, marginBottom: 20 }}>{setup}</div>
-          <div style={{ fontSize: 40, color: "#ffca28" }}>{punchline}</div>
+          <div style={{ fontSize: 56, fontWeight: 800, marginBottom: 30, direction: "rtl", display: "flex" }}>
+            "{setup}"
+          </div>
+          <div style={{ fontSize: 42, color: "#ffca28", backgroundColor: "rgba(255,202,40,0.1)", padding: "20px 40px", borderRadius: "20px", direction: "rtl", display: "flex" }}>
+            {punchline}
+          </div>
+          <div style={{ position: "absolute", top: 40, right: 60, color: "#ffca28", fontSize: 28, fontWeight: 900 }}>
+            Afchat.fun
+          </div>
         </div>
       ),
       {
