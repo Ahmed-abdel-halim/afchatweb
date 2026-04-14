@@ -1,7 +1,6 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 import fs from "fs";
-import path from "path";
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,24 +10,21 @@ export async function GET(request: NextRequest) {
     let punchline = searchParams.get("punchline") || "Afchat.fun";
     const id = searchParams.get("id");
 
-    // Load Font Locally from VPS
+    // Load Font with Absolute Path for VPS
     let fontData: ArrayBuffer | null = null;
     try {
-      // Path on your VPS
-      const fontPath = path.join(process.cwd(), "app/og/Cairo-Bold.ttf");
+      const fontPath = "/home/afchat/htdocs/afchat.fun/app/og/Cairo-Bold.ttf";
       if (fs.existsSync(fontPath)) {
-        const buffer = fs.readFileSync(fontPath);
-        fontData = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
-      } else {
-        console.error("Font file NOT found at:", fontPath);
+        const fileBuffer = fs.readFileSync(fontPath);
+        fontData = fileBuffer.buffer.slice(fileBuffer.byteOffset, fileBuffer.byteOffset + fileBuffer.byteLength);
+        console.log("Font loaded successfully from absolute path");
       }
     } catch (e) {
-      console.error("Critical: Local font loading failed", e);
+      console.error("Font loading error:", e);
     }
 
     if (id) {
       try {
-        // Try multiple paths for API to avoid 404
         let res = await fetch(`https://api.afchat.fun/api/setups-by-id/${id}`, { cache: 'no-store' });
         if (res.status === 404) {
            res = await fetch(`https://api.afchat.fun/setups-by-id/${id}`, { cache: 'no-store' });
@@ -96,6 +92,7 @@ export async function GET(request: NextRequest) {
       }
     );
   } catch (err: any) {
+    console.error("Final Catch OG Error:", err.message);
     return new Response(`Error: ${err.message}`, { status: 500 });
   }
 }
