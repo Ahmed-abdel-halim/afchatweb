@@ -9,23 +9,17 @@ export async function GET(request: NextRequest) {
     let punchline = searchParams.get("punchline") || "أكبر تجمع للكوميديا والردود الساخرة";
     const id = searchParams.get("id");
 
-    // 1. Fetch Font directly from Google CDN (Spoofing Browser)
+    // 1. Next.js Native Font Loading using WOFF (Guaranteed to work locally)
     let fontData: ArrayBuffer | null = null;
     try {
-      const fontUrl = "https://fonts.gstatic.com/s/cairo/v28/slnF-2En_p445JvXDBW3ZzE.ttf";
-      const fontRes = await fetch(fontUrl, {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
-        },
-        cache: "force-cache"
-      });
-      if (fontRes.ok) {
-        fontData = await fontRes.arrayBuffer();
-      } else {
-        console.error("Google Font Fetch Failed:", fontRes.status);
+      fontData = await fetch(new URL("../../public/fonts/cairo.woff", import.meta.url)).then((res) => res.arrayBuffer());
+      if (fontData.byteLength < 10000) {
+        throw new Error("Font file is corrupted or too small");
       }
-    } catch (e) {
-      console.error("Google Font Fetch Error:", e);
+    } catch (e: any) {
+      console.error("Font Load Error in Next.js Native Fetch:", e.message);
+      // We nullify fontData so the image does not render 500 when Satori crashes
+      fontData = null;
     }
 
     // 2. Fetch Data
@@ -89,7 +83,7 @@ export async function GET(request: NextRequest) {
       {
         width: 1200,
         height: 630,
-        ...(fontData && {
+        ...(fontData ? {
           fonts: [
             {
               name: "Cairo",
@@ -98,7 +92,7 @@ export async function GET(request: NextRequest) {
               weight: 700,
             },
           ]
-        })
+        } : {})
       }
     );
   } catch (err: any) {
