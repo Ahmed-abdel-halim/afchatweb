@@ -3,42 +3,52 @@ import { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
-// Fetch the Cairo font once at the top level
-const fontPromise = fetch(
-  new URL("https://fonts.gstatic.com/s/cairo/v28/slnF-2En_p445JvXDBW3ZzE.ttf")
-).then((res) => res.arrayBuffer());
-
 export async function GET(request: NextRequest) {
   try {
-    const fontData = await fontPromise;
     const { searchParams } = new URL(request.url);
     
+    // Get params with fallbacks
     let setup = searchParams.get("setup") || "أفشات - Afchat.fun";
     let punchline = searchParams.get("punchline") || "أقوى قفشات وبانشلاين الردود العربية";
     const id = searchParams.get("id");
 
+    // Fetch font within the request to handle edge cases
+    let fontData: ArrayBuffer | null = null;
+    try {
+      const fontRes = await fetch(
+        new URL("https://fonts.gstatic.com/s/cairo/v28/slnF-2En_p445JvXDBW3ZzE.ttf")
+      );
+      if (fontRes.ok) fontData = await fontRes.arrayBuffer();
+    } catch (e) {
+      console.error("Font loading failed", e);
+    }
+
     // Try to fetch data if ID is provided
     if (id) {
       try {
-        const API_BASE = "https://api.afchat.fun/api";
-        const res = await fetch(`${API_BASE}/setups-by-id/${id}`, { cache: 'no-store' });
+        const res = await fetch(`https://api.afchat.fun/api/setups-by-id/${id}`, { 
+          cache: 'no-store',
+          signal: AbortSignal.timeout(2000) // Don't wait too long
+        });
         if (res.ok) {
           const json = await res.json();
           const data = json.data ?? json;
-          if (data.text) setup = data.text;
-          if (data.punchlines && data.punchlines.length > 0) {
-            const sorted = [...data.punchlines].sort((a, b) => (b.laughs || 0) - (a.laughs || 0));
-            punchline = sorted[0].text;
+          if (data && data.text) {
+             setup = data.text;
+             if (data.punchlines && data.punchlines.length > 0) {
+               const sorted = [...data.punchlines].sort((a, b) => (b.laughs || 0) - (a.laughs || 0));
+               punchline = sorted[0].text;
+             }
           }
         }
       } catch (e) {
-        console.error("OG Data Fetch Error:", e);
+        console.error("Data fetch failed", e);
       }
     }
 
-    // Truncate long strings
-    setup = setup.length > 80 ? setup.slice(0, 80) + "..." : setup;
-    punchline = punchline.length > 80 ? punchline.slice(0, 80) + "..." : punchline;
+    // Clean up text
+    setup = setup.length > 100 ? setup.slice(0, 100) + "..." : setup;
+    punchline = punchline.length > 100 ? punchline.slice(0, 100) + "..." : punchline;
 
     return new ImageResponse(
       (
@@ -55,16 +65,16 @@ export async function GET(request: NextRequest) {
             padding: "50px",
             color: "white",
             textAlign: "center",
-            fontFamily: "Cairo",
+            fontFamily: fontData ? "Cairo" : "sans-serif",
           }}
         >
-          {/* Top Brand */}
+          {/* Top Navbar Style */}
           <div
             style={{
               position: "absolute",
               top: 50,
               right: 60,
-              fontSize: 36,
+              fontSize: 32,
               fontWeight: 900,
               color: "#ffca28",
               display: "flex",
@@ -73,27 +83,27 @@ export async function GET(request: NextRequest) {
             Afchat.fun
           </div>
 
-          {/* Main Card */}
+          {/* Card */}
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "rgba(255,255,255,0.06)",
-              border: "2px solid rgba(255,255,255,0.12)",
+              backgroundColor: "rgba(255,255,255,0.08)",
+              border: "2px solid rgba(255,255,255,0.15)",
               padding: "60px",
               borderRadius: "40px",
-              width: "1000px",
+              width: "1040px",
+              boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
             }}
           >
-            {/* Setup */}
             <div
               style={{
                 fontSize: 54,
                 fontWeight: 800,
                 color: "white",
-                marginBottom: 40,
+                marginBottom: 35,
                 direction: "rtl",
                 display: "flex",
                 lineHeight: 1.2,
@@ -102,13 +112,12 @@ export async function GET(request: NextRequest) {
               "{setup}"
             </div>
             
-            {/* Punchline */}
             <div
               style={{
-                fontSize: 44,
+                fontSize: 46,
                 fontWeight: 600,
                 color: "#ffca28",
-                background: "rgba(255, 202, 40, 0.15)",
+                background: "rgba(255, 202, 40, 0.12)",
                 padding: "20px 50px",
                 borderRadius: "24px",
                 direction: "rtl",
@@ -119,34 +128,34 @@ export async function GET(request: NextRequest) {
             </div>
           </div>
 
-          {/* Slogan */}
           <div
             style={{
               position: "absolute",
               bottom: 50,
-              fontSize: 26,
+              fontSize: 24,
               color: "rgba(255,255,255,0.4)",
               display: "flex",
+              fontWeight: 400,
             }}
           >
-             اكتشف وشارك أقوى الردود العربية الساخرة
+             أفشات - أكبر تجمع للكوميديا والردود الساخرة
           </div>
         </div>
       ),
       {
         width: 1200,
         height: 630,
-        fonts: [
+        fonts: fontData ? [
           {
             name: "Cairo",
             data: fontData,
             weight: 700,
             style: "normal",
           },
-        ],
+        ] : [],
       }
     );
-  } catch (err) {
-    return new Response(`Failed to generate image`, { status: 500 });
+  } catch (err: any) {
+    return new Response(`Failed to generate image: ${err.message}`, { status: 500 });
   }
 }
