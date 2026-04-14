@@ -1,7 +1,5 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
-import fs from "fs";
-import path from "path";
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,16 +9,17 @@ export async function GET(request: NextRequest) {
     let punchline = searchParams.get("punchline") || "أكبر تجمع للكوميديا والردود الساخرة";
     const id = searchParams.get("id");
 
-    // 1. Load Font Safely from public/fonts
+    // 1. Load Font using standard fetch from YOUR OWN site (100% stable)
     let fontData: ArrayBuffer | null = null;
     try {
-      const fontPath = path.join(process.cwd(), "public/fonts/Cairo-Bold.ttf");
-      if (fs.existsSync(fontPath)) {
-        const fileBuffer = fs.readFileSync(fontPath);
-        fontData = fileBuffer.buffer.slice(fileBuffer.byteOffset, fileBuffer.byteOffset + fileBuffer.byteLength);
+      const fontRes = await fetch("https://afchat.fun/fonts/Cairo-Bold.ttf", { cache: "force-cache" });
+      if (fontRes.ok) {
+        fontData = await fontRes.arrayBuffer();
+      } else {
+        console.error("Failed to fetch font from local URL:", fontRes.status);
       }
     } catch (e) {
-      console.error("Font Load Error");
+      console.error("Font fetch exception:", e);
     }
 
     // 2. Data Fetching
