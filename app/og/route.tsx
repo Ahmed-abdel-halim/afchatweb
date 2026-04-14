@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 import fs from "fs";
+import path from "path";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,29 +11,27 @@ export async function GET(request: NextRequest) {
     let punchline = searchParams.get("punchline") || "أكبر تجمع للكوميديا والردود الساخرة";
     const id = searchParams.get("id");
 
-    // 1. Load Font Safely
+    // 1. Load Font Safely from public/fonts
     let fontData: ArrayBuffer | null = null;
     try {
-      const fontPath = "/home/afchat/htdocs/afchat.fun/app/og/Cairo-Bold.ttf";
+      const fontPath = path.join(process.cwd(), "public/fonts/Cairo-Bold.ttf");
       if (fs.existsSync(fontPath)) {
-        fontData = fs.readFileSync(fontPath).buffer as ArrayBuffer;
+        const fileBuffer = fs.readFileSync(fontPath);
+        fontData = fileBuffer.buffer.slice(fileBuffer.byteOffset, fileBuffer.byteOffset + fileBuffer.byteLength);
       }
     } catch (e) {
       console.error("Font Load Error");
     }
 
-    // 2. Fetch Data with Path Fallbacks (Fixed 404 issue)
+    // 2. Data Fetching
     if (id) {
-      try {
-        // Try multiple URL variations because of server config
-        const urls = [
-          `https://api.afchat.fun/api/setups-by-id/${id}`,
-          `https://api.afchat.fun/setups-by-id/${id}`
-        ];
-        
-        let dataFound = false;
-        for (const url of urls) {
-          if (dataFound) break;
+      const urls = [
+        `https://api.afchat.fun/api/setups-by-id/${id}`,
+        `https://api.afchat.fun/setups-by-id/${id}`
+      ];
+      
+      for (const url of urls) {
+        try {
           const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(3000) });
           if (res.ok) {
             const json = await res.json();
@@ -40,21 +39,18 @@ export async function GET(request: NextRequest) {
             if (data && data.text) {
               setup = data.text;
               if (data.punchlines && data.punchlines.length > 0) {
-                 const sorted = [...data.punchlines].sort((a, b) => (b.laughs || 0) - (a.laughs || 0));
-                 punchline = sorted[0].text;
+                const sorted = [...data.punchlines].sort((a, b) => (b.laughs || 0) - (a.laughs || 0));
+                punchline = sorted[0].text;
               }
-              dataFound = true;
+              break; 
             }
           }
-        }
-      } catch (e) {
-        console.error("API Fetch Error");
+        } catch (e) {}
       }
     }
 
-    // 3. Render Image
-    setup = setup.length > 100 ? setup.slice(0, 100) + "..." : setup;
-    punchline = punchline.length > 100 ? punchline.slice(0, 100) + "..." : punchline;
+    setup = setup.length > 120 ? setup.slice(0, 117) + "..." : setup;
+    punchline = punchline.length > 120 ? punchline.slice(0, 117) + "..." : punchline;
 
     return new ImageResponse(
       (
@@ -74,13 +70,13 @@ export async function GET(request: NextRequest) {
             fontFamily: fontData ? "Cairo" : "sans-serif",
           }}
         >
-          <div style={{ fontSize: 52, fontWeight: 800, marginBottom: 35, display: "flex", direction: "rtl", lineHeight: 1.2 }}>
+          <div style={{ fontSize: 46, fontWeight: 800, marginBottom: 35, display: "flex", direction: "rtl", lineHeight: 1.3 }}>
             "{setup}"
           </div>
-          <div style={{ fontSize: 42, color: "#ffca28", backgroundColor: "rgba(255,202,40,0.15)", padding: "20px 50px", borderRadius: "24px", display: "flex", direction: "rtl" }}>
+          <div style={{ fontSize: 36, color: "#ffca28", backgroundColor: "rgba(255,202,40,0.15)", padding: "20px 50px", borderRadius: "24px", display: "flex", direction: "rtl", lineHeight: 1.3 }}>
             {punchline}
           </div>
-          <div style={{ position: "absolute", top: 40, right: 60, color: "#ffca28", fontSize: 26, fontWeight: 900 }}>
+          <div style={{ position: "absolute", bottom: 40, right: 60, color: "#ffca28", fontSize: 22, fontWeight: 900, opacity: 0.8 }}>
             Afchat.fun
           </div>
         </div>
@@ -99,6 +95,6 @@ export async function GET(request: NextRequest) {
       }
     );
   } catch (err: any) {
-    return new Response(`Final Crash: ${err.message}`, { status: 500 });
+    return new Response(`Error: ${err.message}`, { status: 500 });
   }
 }
