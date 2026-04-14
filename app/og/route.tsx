@@ -1,7 +1,8 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 
-export const runtime = "edge";
+// Standard Node.js runtime is better for VPS/PM2 hosting
+// export const runtime = "edge"; 
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,23 +13,22 @@ export async function GET(request: NextRequest) {
     let punchline = searchParams.get("punchline") || "أقوى قفشات وبانشلاين الردود العربية";
     const id = searchParams.get("id");
 
-    // Fetch font within the request to handle edge cases
+    // Fetch font within the request
     let fontData: ArrayBuffer | null = null;
     try {
       const fontRes = await fetch(
-        new URL("https://fonts.gstatic.com/s/cairo/v28/slnF-2En_p445JvXDBW3ZzE.ttf")
+        "https://fonts.gstatic.com/s/cairo/v28/slnF-2En_p445JvXDBW3ZzE.ttf"
       );
       if (fontRes.ok) fontData = await fontRes.arrayBuffer();
     } catch (e) {
-      console.error("Font loading failed", e);
+      console.error("Font loading error:", e);
     }
 
     // Try to fetch data if ID is provided
     if (id) {
       try {
         const res = await fetch(`https://api.afchat.fun/api/setups-by-id/${id}`, { 
-          cache: 'no-store',
-          signal: AbortSignal.timeout(2000) // Don't wait too long
+          cache: 'no-store'
         });
         if (res.ok) {
           const json = await res.json();
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
           }
         }
       } catch (e) {
-        console.error("Data fetch failed", e);
+        console.error("Data fetch error:", e);
       }
     }
 
@@ -68,7 +68,6 @@ export async function GET(request: NextRequest) {
             fontFamily: fontData ? "Cairo" : "sans-serif",
           }}
         >
-          {/* Top Navbar Style */}
           <div
             style={{
               position: "absolute",
@@ -83,7 +82,6 @@ export async function GET(request: NextRequest) {
             Afchat.fun
           </div>
 
-          {/* Card */}
           <div
             style={{
               display: "flex",
@@ -156,6 +154,7 @@ export async function GET(request: NextRequest) {
       }
     );
   } catch (err: any) {
-    return new Response(`Failed to generate image: ${err.message}`, { status: 500 });
+    console.error("OG Route Error:", err);
+    return new Response(`Error: ${err.message}`, { status: 500 });
   }
 }
