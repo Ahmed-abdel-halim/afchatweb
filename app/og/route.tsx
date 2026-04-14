@@ -9,15 +9,25 @@ export async function GET(request: NextRequest) {
     let punchline = searchParams.get("punchline") || "Afchat.fun";
     const id = searchParams.get("id");
 
-    console.log(`OG Request for ID: ${id}`); // Debug
+    // Load Font (Mandatory for Arabic to fix Satori error)
+    let fontData: ArrayBuffer | null = null;
+    try {
+       // Using a stable static font URL
+      const fontRes = await fetch("https://fonts.gstatic.com/s/cairo/v28/slnF-2En_p445JvXDBW3ZzE.ttf");
+      if (fontRes.ok) fontData = await fontRes.arrayBuffer();
+    } catch (e) {
+      console.error("Critical: Font loading failed");
+    }
 
     if (id) {
       try {
-        // Increase timeout to 5 seconds
-        const res = await fetch(`https://api.afchat.fun/api/setups-by-id/${id}`, {
-          next: { revalidate: 60 },
-          signal: AbortSignal.timeout(5000), 
-        });
+        // Try without /api/ prefix first since /api is often the subdomain itself
+        let res = await fetch(`https://api.afchat.fun/api/setups-by-id/${id}`, { cache: 'no-store' });
+        
+        // If 404, try WITHOUT /api prefix
+        if (res.status === 404) {
+           res = await fetch(`https://api.afchat.fun/setups-by-id/${id}`, { cache: 'no-store' });
+        }
         
         if (res.ok) {
           const json = await res.json();
@@ -28,17 +38,13 @@ export async function GET(request: NextRequest) {
               const sorted = [...data.punchlines].sort((a, b) => (b.laughs || 0) - (a.laughs || 0));
               punchline = sorted[0].text;
             }
-            console.log("Successfully fetched data for OG image");
           }
-        } else {
-          console.error(`API Fetch failed with status: ${res.status}`);
         }
-      } catch (e: any) {
-        console.error("OG Data Fetch Error:", e.message);
+      } catch (e) {
+        console.error("Data fetch error in OG");
       }
     }
 
-    // Truncate text if too long
     setup = setup.length > 100 ? setup.slice(0, 100) + "..." : setup;
     punchline = punchline.length > 100 ? punchline.slice(0, 100) + "..." : punchline;
 
@@ -57,13 +63,13 @@ export async function GET(request: NextRequest) {
             padding: "60px",
             color: "white",
             textAlign: "center",
-            direction: "rtl",
+            fontFamily: "Cairo",
           }}
         >
-          <div style={{ fontSize: 52, fontWeight: 800, marginBottom: 35, display: "flex", lineHeight: 1.2 }}>
+          <div style={{ fontSize: 52, fontWeight: 800, marginBottom: 35, display: "flex", direction: "rtl", lineHeight: 1.2 }}>
             "{setup}"
           </div>
-          <div style={{ fontSize: 42, color: "#ffca28", backgroundColor: "rgba(255,202,40,0.15)", padding: "20px 50px", borderRadius: "24px", display: "flex" }}>
+          <div style={{ fontSize: 42, color: "#ffca28", backgroundColor: "rgba(255,202,40,0.15)", padding: "20px 50px", borderRadius: "24px", display: "flex", direction: "rtl" }}>
             {punchline}
           </div>
           <div style={{ position: "absolute", top: 40, right: 60, color: "#ffca28", fontSize: 26, fontWeight: 900 }}>
@@ -74,6 +80,14 @@ export async function GET(request: NextRequest) {
       {
         width: 1200,
         height: 630,
+        fonts: fontData ? [
+          {
+            name: "Cairo",
+            data: fontData,
+            style: "normal",
+            weight: 700,
+          },
+        ] : [],
       }
     );
   } catch (err: any) {
