@@ -9,22 +9,10 @@ export async function GET(request: NextRequest) {
     let punchline = searchParams.get("punchline") || "Afchat.fun";
     const id = searchParams.get("id");
 
-    // Load Font (Mandatory for Arabic to fix Satori error)
-    let fontData: ArrayBuffer | null = null;
-    try {
-       // Using a stable static font URL
-      const fontRes = await fetch("https://fonts.gstatic.com/s/cairo/v28/slnF-2En_p445JvXDBW3ZzE.ttf");
-      if (fontRes.ok) fontData = await fontRes.arrayBuffer();
-    } catch (e) {
-      console.error("Critical: Font loading failed");
-    }
-
     if (id) {
       try {
-        // Try without /api/ prefix first since /api is often the subdomain itself
+        // Try multiple paths for API to avoid 404
         let res = await fetch(`https://api.afchat.fun/api/setups-by-id/${id}`, { cache: 'no-store' });
-        
-        // If 404, try WITHOUT /api prefix
         if (res.status === 404) {
            res = await fetch(`https://api.afchat.fun/setups-by-id/${id}`, { cache: 'no-store' });
         }
@@ -63,7 +51,6 @@ export async function GET(request: NextRequest) {
             padding: "60px",
             color: "white",
             textAlign: "center",
-            fontFamily: "Cairo",
           }}
         >
           <div style={{ fontSize: 52, fontWeight: 800, marginBottom: 35, display: "flex", direction: "rtl", lineHeight: 1.2 }}>
@@ -80,14 +67,6 @@ export async function GET(request: NextRequest) {
       {
         width: 1200,
         height: 630,
-        fonts: fontData ? [
-          {
-            name: "Cairo",
-            data: fontData,
-            style: "normal",
-            weight: 700,
-          },
-        ] : [],
       }
     );
   } catch (err: any) {
