@@ -9,18 +9,6 @@ export async function GET(request: NextRequest) {
     let punchline = searchParams.get("punchline") || "Afchat.fun";
     const id = searchParams.get("id");
 
-    // Load Font safely
-    let fontData: ArrayBuffer | null = null;
-    try {
-      const fontRes = await fetch(
-        "https://fonts.gstatic.com/s/cairo/v28/slnF-2En_p445JvXDBW3ZzE.ttf",
-        { signal: AbortSignal.timeout(3000) }
-      );
-      if (fontRes.ok) fontData = await fontRes.arrayBuffer();
-    } catch (e) {
-      console.log("Font fetch failed, using fallback");
-    }
-
     // Fetch data safely
     if (id) {
       try {
@@ -64,7 +52,6 @@ export async function GET(request: NextRequest) {
             padding: "60px",
             color: "white",
             textAlign: "center",
-            fontFamily: fontData ? "Cairo" : "sans-serif",
           }}
         >
           <div style={{ fontSize: 52, fontWeight: 800, marginBottom: 30, direction: "rtl", display: "flex" }}>
@@ -81,14 +68,6 @@ export async function GET(request: NextRequest) {
       {
         width: 1200,
         height: 630,
-        fonts: fontData ? [
-          {
-            name: "Cairo",
-            data: fontData,
-            style: "normal",
-            weight: 700,
-          },
-        ] : [],
       }
     );
   } catch (err: any) {
