@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const title = `${setup.text} | أفشات`;
   
   // Use numeric ID for the image URL to be totally ASCII/English
-  const ogImageUrl = `https://afchat.fun/og?id=${setup.id}&v=1.7`;
+  const ogImageUrl = `https://afchat.fun/og?id=${setup.id}&v=2.0`;
 
   return {
     title,
@@ -59,7 +59,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
           width: 1200,
           height: 630,
           alt: title,
-          type: "image/png",
         },
       ],
       type: "article",
@@ -69,12 +68,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title,
       description,
       images: [ogImageUrl],
-    },
-    other: {
-      "og:image:secure_url": ogImageUrl,
-      "og:image:type": "image/png",
-      "og:image:width": "1200",
-      "og:image:height": "630",
     },
     alternates: {
       canonical: `https://afchat.fun/p/${setup.slug}`,
