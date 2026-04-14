@@ -9,20 +9,16 @@ export async function GET(request: NextRequest) {
     let punchline = searchParams.get("punchline") || "أكبر تجمع للكوميديا والردود الساخرة";
     const id = searchParams.get("id");
 
-    // 1. Load Font using standard fetch from YOUR OWN site (100% stable)
+    // 1. Next.js Native Font Loading (100% Stable)
     let fontData: ArrayBuffer | null = null;
     try {
-      const fontRes = await fetch("https://afchat.fun/fonts/Cairo-Bold.ttf", { cache: "force-cache" });
-      if (fontRes.ok) {
-        fontData = await fontRes.arrayBuffer();
-      } else {
-        console.error("Failed to fetch font from local URL:", fontRes.status);
-      }
+      // Using Next.js local URL resolver
+      fontData = await fetch(new URL("../../public/fonts/Cairo-Bold.ttf", import.meta.url)).then((res) => res.arrayBuffer());
     } catch (e) {
-      console.error("Font fetch exception:", e);
+      console.error("Font Load Error in Next.js Native Fetch", e);
     }
 
-    // 2. Data Fetching
+    // 2. Data Fetching locally
     if (id) {
       const urls = [
         `https://api.afchat.fun/api/setups-by-id/${id}`,
@@ -70,7 +66,7 @@ export async function GET(request: NextRequest) {
           }}
         >
           <div style={{ fontSize: 46, fontWeight: 800, marginBottom: 35, display: "flex", direction: "rtl", lineHeight: 1.3 }}>
-            "{setup}"
+            {setup}
           </div>
           <div style={{ fontSize: 36, color: "#ffca28", backgroundColor: "rgba(255,202,40,0.15)", padding: "20px 50px", borderRadius: "24px", display: "flex", direction: "rtl", lineHeight: 1.3 }}>
             {punchline}
@@ -83,14 +79,16 @@ export async function GET(request: NextRequest) {
       {
         width: 1200,
         height: 630,
-        fonts: fontData ? [
-          {
-            name: "Cairo",
-            data: fontData,
-            style: "normal",
-            weight: 700,
-          },
-        ] : [],
+        ...(fontData && {
+          fonts: [
+            {
+              name: "Cairo",
+              data: fontData,
+              style: "normal",
+              weight: 700,
+            },
+          ]
+        })
       }
     );
   } catch (err: any) {
