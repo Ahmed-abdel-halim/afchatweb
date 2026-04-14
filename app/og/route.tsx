@@ -9,17 +9,18 @@ export async function GET(request: NextRequest) {
     let punchline = searchParams.get("punchline") || "أكبر تجمع للكوميديا والردود الساخرة";
     const id = searchParams.get("id");
 
-    // 1. Next.js Native Font Loading using WOFF (Guaranteed to work locally)
+    // 1. Fetch from unpkg (Highly reliable CDN that rarely blocks VPS IPs)
     let fontData: ArrayBuffer | null = null;
     try {
-      fontData = await fetch(new URL("../../public/fonts/cairo.woff", import.meta.url)).then((res) => res.arrayBuffer());
-      if (fontData.byteLength < 10000) {
-        throw new Error("Font file is corrupted or too small");
+      const fontRes = await fetch("https://unpkg.com/@fontsource/cairo@5.0.8/files/cairo-arabic-700-normal.woff", { cache: "force-cache" });
+      if (fontRes.ok) {
+        const buf = await fontRes.arrayBuffer();
+        if (buf.byteLength > 10000) { // Verify it's actually a font, not a 1KB HTML block page
+          fontData = buf;
+        }
       }
     } catch (e: any) {
-      console.error("Font Load Error in Next.js Native Fetch:", e.message);
-      // We nullify fontData so the image does not render 500 when Satori crashes
-      fontData = null;
+      console.error("Unpkg CDN Font Fetch Error:", e.message);
     }
 
     // 2. Fetch Data
