@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const title = `${setup.text} | أفشات`;
   
   // Use numeric ID for the image URL to be totally ASCII/English
-  const ogImageUrl = `https://afchat.fun/og?id=${setup.id}&v=2.0`;
+  const ogImageUrl = `https://afchat.fun/og?id=${setup.id}&v=2.2`;
 
   return {
     title,
