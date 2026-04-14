@@ -1,5 +1,7 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
+import fs from "fs";
+import path from "path";
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,6 +10,20 @@ export async function GET(request: NextRequest) {
     let setup = searchParams.get("setup") || "أفشات";
     let punchline = searchParams.get("punchline") || "Afchat.fun";
     const id = searchParams.get("id");
+
+    // Load Font Locally from VPS
+    let fontData: ArrayBuffer | null = null;
+    try {
+      // Path on your VPS
+      const fontPath = path.join(process.cwd(), "app/og/Cairo-Bold.ttf");
+      if (fs.existsSync(fontPath)) {
+        fontData = fs.readFileSync(fontPath);
+      } else {
+        console.error("Font file NOT found at:", fontPath);
+      }
+    } catch (e) {
+      console.error("Critical: Local font loading failed", e);
+    }
 
     if (id) {
       try {
@@ -51,6 +67,7 @@ export async function GET(request: NextRequest) {
             padding: "60px",
             color: "white",
             textAlign: "center",
+            fontFamily: fontData ? "Cairo" : "sans-serif",
           }}
         >
           <div style={{ fontSize: 52, fontWeight: 800, marginBottom: 35, display: "flex", direction: "rtl", lineHeight: 1.2 }}>
@@ -67,6 +84,14 @@ export async function GET(request: NextRequest) {
       {
         width: 1200,
         height: 630,
+        fonts: fontData ? [
+          {
+            name: "Cairo",
+            data: fontData,
+            style: "normal",
+            weight: 700,
+          },
+        ] : [],
       }
     );
   } catch (err: any) {
