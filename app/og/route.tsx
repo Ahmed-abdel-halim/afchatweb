@@ -9,12 +9,24 @@ export async function GET(request: NextRequest) {
     let punchline = searchParams.get("punchline") || "Afchat.fun";
     const id = searchParams.get("id");
 
-    // Fetch data safely if ID is provided
+    // Load Font safely
+    let fontData: ArrayBuffer | null = null;
+    try {
+      const fontRes = await fetch(
+        "https://fonts.gstatic.com/s/cairo/v28/slnF-2En_p445JvXDBW3ZzE.ttf",
+        { signal: AbortSignal.timeout(3000) }
+      );
+      if (fontRes.ok) fontData = await fontRes.arrayBuffer();
+    } catch (e) {
+      console.log("Font fetch failed, using fallback");
+    }
+
+    // Fetch data safely
     if (id) {
       try {
         const res = await fetch(`https://api.afchat.fun/api/setups-by-id/${id}`, {
           next: { revalidate: 60 },
-          signal: AbortSignal.timeout(2000), // Max 2 seconds wait
+          signal: AbortSignal.timeout(2000),
         });
         
         if (res.ok) {
@@ -29,7 +41,7 @@ export async function GET(request: NextRequest) {
           }
         }
       } catch (e) {
-        console.log("Safe fallback triggered for OG data");
+        console.log("Data fetch fallback triggered");
       }
     }
 
@@ -52,15 +64,16 @@ export async function GET(request: NextRequest) {
             padding: "60px",
             color: "white",
             textAlign: "center",
+            fontFamily: fontData ? "Cairo" : "sans-serif",
           }}
         >
-          <div style={{ fontSize: 56, fontWeight: 800, marginBottom: 30, direction: "rtl", display: "flex" }}>
+          <div style={{ fontSize: 52, fontWeight: 800, marginBottom: 30, direction: "rtl", display: "flex" }}>
             "{setup}"
           </div>
-          <div style={{ fontSize: 42, color: "#ffca28", backgroundColor: "rgba(255,202,40,0.1)", padding: "20px 40px", borderRadius: "20px", direction: "rtl", display: "flex" }}>
+          <div style={{ fontSize: 40, fontWeight: 600, color: "#ffca28", backgroundColor: "rgba(255,202,40,0.12)", padding: "15px 45px", borderRadius: "20px", direction: "rtl", display: "flex" }}>
             {punchline}
           </div>
-          <div style={{ position: "absolute", top: 40, right: 60, color: "#ffca28", fontSize: 28, fontWeight: 900 }}>
+          <div style={{ position: "absolute", top: 40, right: 60, color: "#ffca28", fontSize: 26, fontWeight: 900 }}>
             Afchat.fun
           </div>
         </div>
@@ -68,6 +81,14 @@ export async function GET(request: NextRequest) {
       {
         width: 1200,
         height: 630,
+        fonts: fontData ? [
+          {
+            name: "Cairo",
+            data: fontData,
+            style: "normal",
+            weight: 700,
+          },
+        ] : [],
       }
     );
   } catch (err: any) {
