@@ -17,7 +17,8 @@ export async function GET(request: NextRequest) {
       // Path on your VPS
       const fontPath = path.join(process.cwd(), "app/og/Cairo-Bold.ttf");
       if (fs.existsSync(fontPath)) {
-        fontData = fs.readFileSync(fontPath);
+        const buffer = fs.readFileSync(fontPath);
+        fontData = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
       } else {
         console.error("Font file NOT found at:", fontPath);
       }
