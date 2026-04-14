@@ -9,16 +9,26 @@ export async function GET(request: NextRequest) {
     let punchline = searchParams.get("punchline") || "أكبر تجمع للكوميديا والردود الساخرة";
     const id = searchParams.get("id");
 
-    // 1. Next.js Native Font Loading (100% Stable)
+    // 1. Fetch Font directly from Google CDN (Spoofing Browser)
     let fontData: ArrayBuffer | null = null;
     try {
-      // Using Next.js local URL resolver
-      fontData = await fetch(new URL("../../public/fonts/Cairo-Bold.ttf", import.meta.url)).then((res) => res.arrayBuffer());
+      const fontUrl = "https://fonts.gstatic.com/s/cairo/v28/slnF-2En_p445JvXDBW3ZzE.ttf";
+      const fontRes = await fetch(fontUrl, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+        },
+        cache: "force-cache"
+      });
+      if (fontRes.ok) {
+        fontData = await fontRes.arrayBuffer();
+      } else {
+        console.error("Google Font Fetch Failed:", fontRes.status);
+      }
     } catch (e) {
-      console.error("Font Load Error in Next.js Native Fetch", e);
+      console.error("Google Font Fetch Error:", e);
     }
 
-    // 2. Data Fetching locally
+    // 2. Fetch Data
     if (id) {
       const urls = [
         `https://api.afchat.fun/api/setups-by-id/${id}`,
@@ -62,16 +72,16 @@ export async function GET(request: NextRequest) {
             padding: "60px",
             color: "white",
             textAlign: "center",
-            fontFamily: fontData ? "Cairo" : "sans-serif",
+            fontFamily: fontData ? "Cairo" : undefined,
           }}
         >
-          <div style={{ fontSize: 46, fontWeight: 800, marginBottom: 35, display: "flex", direction: "rtl", lineHeight: 1.3 }}>
-            {setup}
+          <div style={{ fontSize: 48, fontWeight: 800, marginBottom: 35, display: "flex", direction: "rtl", lineHeight: 1.3 }}>
+            "{setup}"
           </div>
-          <div style={{ fontSize: 36, color: "#ffca28", backgroundColor: "rgba(255,202,40,0.15)", padding: "20px 50px", borderRadius: "24px", display: "flex", direction: "rtl", lineHeight: 1.3 }}>
+          <div style={{ fontSize: 38, color: "#ffca28", backgroundColor: "rgba(255,202,40,0.15)", padding: "20px 50px", borderRadius: "24px", display: "flex", direction: "rtl", lineHeight: 1.3 }}>
             {punchline}
           </div>
-          <div style={{ position: "absolute", bottom: 40, right: 60, color: "#ffca28", fontSize: 22, fontWeight: 900, opacity: 0.8 }}>
+          <div style={{ position: "absolute", bottom: 40, right: 60, color: "#ffca28", fontSize: 24, fontWeight: 900, opacity: 0.8 }}>
             Afchat.fun
           </div>
         </div>
