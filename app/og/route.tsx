@@ -92,18 +92,27 @@ export async function GET(request: NextRequest) {
       (
         <div style={{ height: "100%", width: "100%", display: "flex", flexDirection: "column", backgroundColor: "#0d0216", fontFamily: fontData ? '"Cairo"' : 'sans-serif', color: "white" }}>
           {/* Real Website Navbar */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 40px", width: "100%", background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 100%)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 40px", width: "100%", background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 100%)", boxShadow: "0 4px 15px rgba(0,0,0,0.2)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-               <div style={{ backgroundColor: "#ff0099", borderRadius: "50%", width: "38px", height: "38px", border: "2px solid white" }} />
-               <div style={{ backgroundColor: "rgba(255,255,255,0.2)", borderRadius: "50%", width: "38px", height: "38px" }} />
-               {/* "Add" Button like the site */}
-               <div style={{ backgroundColor: "#ff0099", padding: "6px 18px", borderRadius: "20px", fontSize: "16px", fontWeight: "bold", marginLeft: "10px", display: "flex" }}>
+               {/* Profile Avatar */}
+               <div style={{ backgroundColor: "#312e81", borderRadius: "50%", width: "40px", height: "40px", border: "2px solid white", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: "bold", fontSize: "18px" }}>G</div>
+               
+               {/* Notification Bell with Dot */}
+               <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.15)" }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                    <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+                  </svg>
+                  <div style={{ position: "absolute", top: "8px", right: "8px", width: "10px", height: "10px", backgroundColor: "#ef4444", borderRadius: "50%", border: "1.5px solid #7c3aed" }} />
+               </div>
+
+               {/* "Add" Button */}
+               <div style={{ backgroundColor: "#ff0099", padding: "8px 22px", borderRadius: "20px", fontSize: "16px", fontWeight: "900", marginLeft: "10px", display: "flex", boxShadow: "0 4px 10px rgba(0,0,0,0.2)" }}>
                   {shapeText("أضف")}
                </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <span style={{ fontSize: "28px", fontWeight: "900" }}>{shapeText("أفشات")}</span>
-              <div style={{ backgroundColor: "#ffca28", borderRadius: "8px", width: "35px", height: "35px", display: "flex", alignItems: "center", justifyContent: "center", color: "black", fontWeight: "900" }}>{shapeText("أ")}</div>
+              <span style={{ fontSize: "30px", fontWeight: "900", letterSpacing: "-1px" }}>{shapeText("أفشات")}</span>
+              <div style={{ backgroundColor: "#ffca28", borderRadius: "10px", width: "38px", height: "38px", display: "flex", alignItems: "center", justifyContent: "center", color: "black", fontWeight: "900", fontSize: "22px" }}>{shapeText("أ")}</div>
             </div>
           </div>
 
