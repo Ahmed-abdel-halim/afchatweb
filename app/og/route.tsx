@@ -4,28 +4,28 @@ import { NextRequest } from "next/server";
 // دالة متطورة لشبك الحروف العربية
 function shapeArabic(str: string): string {
   const map: Record<string, string[]> = {
-    'ا':['ا','ا','ﺎ','ﺎ'],'أ':['أ','أ','ﺄ','ﺄ'],'إ':['إ','إ','ﺈ','ﺈ'],'آ':['آ','آ','ﺂ','ﺂ'],
-    'ب':['ب','ﺑ','ﺒ','ﺐ'],'ت':['ت','ﺗ','ﺘ','ﺖ'],'ث':['ث','ﺛ','ﺜ','ﺚ'],
-    'ج':['ج','ﺟ','ﺠ','ﺞ'],'ح':['ح','ﺣ','ﺤ','ﺢ'],'خ':['خ','ﺧ','ﺨ','ﺦ'],
-    'د':['د','د','ﺪ','ﺪ'],'ذ':['ذ','ذ','ﺬ','ﺬ'],'ر':['ر','ر','ﺮ','ﺮ'],'ز':['ز','ز','ﺰ','ﺰ'],
-    'س':['س','ﺳ','ﺴ','ﺲ'],'ش':['ش','ﺷ','ﺸ','ﺶ'],'ص':['ص','ﺻ','ﺼ','ﺺ'],'ض':['ض','ﺿ','ﻀ','ﺾ'],
-    'ط':['ط','ﻃ','ﻄ','ﻂ'],'ظ':['ظ','ﻇ','ﻈ','ﻆ'],'ع':['ع','ﻋ','ﻌ','ﻊ'],'غ':['غ','ﻏ','ﻐ','ﻎ'],
-    'ف':['ف','ﻓ','ﻔ','ﻒ'],'ق':['ق','ﻗ','ﻘ','ﻖ'],'ك':['ك','ﻛ','ﻜ','ﻚ'],'ل':['ل','ﻟ','ﻠ','ﻞ'],
-    'م':['م','ﻣ','ﻤ','ﻢ'],'ن':['ن','ﻧ','ﻨ','ﻦ'],'ه':['ه','ﻫ','ﻬ','ﻪ'],'و':['و','و','ﻮ','ﻮ'],
-    'ي':['ي','ﻳ','ﻴ','ﻲ'],'ى':['ى','ى','ﻰ','ﻰ'],'ة':['ة','ة','ﺔ','ﺔ'],'ؤ':['ؤ','ؤ','ﺆ','ﺆ'],
-    'ئ':['ئ','ﺋ','ﺌ',''],'لا':['لا','لا','ﻼ','ﻼ'],'لأ':['لأ','لأ','ﻸ','ﻸ'],'لإ':['لإ','لإ','ﻺ','ﻺ'],'لآ':['لآ','لآ','ﻶ','ﻶ']
+    'ا': ['ا', 'ا', 'ﺎ', 'ﺎ'], 'أ': ['أ', 'أ', 'ﺄ', 'ﺄ'], 'إ': ['إ', 'إ', 'ﺈ', 'ﺈ'], 'آ': ['آ', 'آ', 'ﺂ', 'ﺂ'],
+    'ب': ['ب', 'ﺑ', 'ﺒ', 'ﺐ'], 'ت': ['ت', 'ﺗ', 'ﺘ', 'ﺖ'], 'ث': ['ث', 'ﺛ', 'ﺜ', 'ﺚ'],
+    'ج': ['ج', 'ﺟ', 'ﺠ', 'ﺞ'], 'ح': ['ح', 'ﺣ', 'ﺤ', 'ﺢ'], 'خ': ['خ', 'ﺧ', 'ﺨ', 'ﺦ'],
+    'د': ['د', 'د', 'ﺪ', 'ﺪ'], 'ذ': ['ذ', 'ذ', 'ﺬ', 'ﺬ'], 'ر': ['ر', 'ر', 'ﺮ', 'ﺮ'], 'ز': ['ز', 'ز', 'ﺰ', 'ﺰ'],
+    'س': ['س', 'ﺳ', 'ﺴ', 'ﺲ'], 'ش': ['ش', 'ﺷ', 'ﺸ', 'ﺶ'], 'ص': ['ص', 'ﺻ', 'ﺼ', 'ﺺ'], 'ض': ['ض', 'ﺿ', 'ﻀ', 'ﺾ'],
+    'ط': ['ط', 'ﻃ', 'ﻄ', 'ﻂ'], 'ظ': ['ظ', 'ﻇ', 'ﻈ', 'ﻆ'], 'ع': ['ع', 'ﻋ', 'ﻌ', 'ﻊ'], 'غ': ['غ', 'ﻏ', 'ﻐ', 'ﻎ'],
+    'ف': ['ف', 'ﻓ', 'ﻔ', 'ﻒ'], 'ق': ['ق', 'ﻗ', 'ﻘ', 'ﻖ'], 'ك': ['ك', 'ﻛ', 'ﻜ', 'ﻚ'], 'ل': ['ل', 'ﻟ', 'ﻠ', 'ﻞ'],
+    'م': ['م', 'ﻣ', 'ﻤ', 'ﻢ'], 'ن': ['ن', 'ﻧ', 'ﻨ', 'ﻦ'], 'ه': ['ه', 'ﻫ', 'ﻬ', 'ﻪ'], 'و': ['و', 'و', 'ﻮ', 'ﻮ'],
+    'ي': ['ي', 'ﻳ', 'ﻴ', 'ﻲ'], 'ى': ['ى', 'ى', 'ﻰ', 'ﻰ'], 'ة': ['ة', 'ة', 'ﺔ', 'ﺔ'], 'ؤ': ['ؤ', 'ؤ', 'ﺆ', 'ﺆ'],
+    'ئ': ['ئ', 'ﺋ', 'ﺌ', ''], 'لا': ['لا', 'لا', 'ﻼ', 'ﻼ'], 'لأ': ['لأ', 'لأ', 'ﻸ', 'ﻸ'], 'لإ': ['لإ', 'لإ', 'ﻺ', 'ﻺ'], 'لآ': ['لآ', 'لآ', 'ﻶ', 'ﻶ']
   };
-  const nc = ["د","ذ","ر","ز","و","ا","أ","إ","آ","ؤ","ى","ة"];
+  const nc = ["د", "ذ", "ر", "ز", "و", "ا", "أ", "إ", "آ", "ؤ", "ى", "ة"];
   let res = "";
-  for(let i=0; i<str.length; i++){
-    const c = str[i], n = str[i+1], p = str[i-1];
-    if(!map[c]){ res+=c; continue; }
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i], n = str[i + 1], p = str[i - 1];
+    if (!map[c]) { res += c; continue; }
     const cP = p && map[p] && !nc.includes(p);
     const cN = n && map[n] && !nc.includes(c);
-    if(c==='ل' && n && ['ا','أ','إ','آ'].includes(n)){
-      const lig = 'ل'+n; res += cP ? map[lig][2] : map[lig][0]; i++; continue;
+    if (c === 'ل' && n && ['ا', 'أ', 'إ', 'آ'].includes(n)) {
+      const lig = 'ل' + n; res += cP ? map[lig][2] : map[lig][0]; i++; continue;
     }
-    let f = 0; if(!cP && cN) f=1; else if(cP && cN) f=2; else if(cP && !cN) f=3;
+    let f = 0; if (!cP && cN) f = 1; else if (cP && cN) f = 2; else if (cP && !cN) f = 3;
     res += map[c][f];
   }
   return res;
@@ -70,19 +70,19 @@ export async function GET(request: NextRequest) {
         signal: AbortSignal.timeout(4000)
       });
       if (fontRes.ok) fontData = await fontRes.arrayBuffer();
-    } catch (e) {}
+    } catch (e) { }
 
     if (id) {
-       try {
-          const res = await fetch(`https://api.afchat.fun/api/setups-by-id/${id}`, { cache: 'no-store' });
-          if (res.ok) {
-            const json = await res.json(); const data = json.data ?? json;
-            if (data && data.text) {
-              setup = data.text;
-              if (data.punchlines?.length) punchline = [...data.punchlines].sort((a,b) => b.laughs - a.laughs)[0].text;
-            }
+      try {
+        const res = await fetch(`https://api.afchat.fun/api/setups-by-id/${id}`, { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json(); const data = json.data ?? json;
+          if (data && data.text) {
+            setup = data.text;
+            if (data.punchlines?.length) punchline = [...data.punchlines].sort((a, b) => b.laughs - a.laughs)[0].text;
           }
-       } catch (e) {}
+        }
+      } catch (e) { }
     }
 
     const setupLines = wrapAndReverse(setup, 48);
@@ -92,51 +92,42 @@ export async function GET(request: NextRequest) {
       (
         <div style={{ height: "100%", width: "100%", display: "flex", flexDirection: "column", backgroundColor: "#0d0216", fontFamily: fontData ? '"Cairo"' : 'sans-serif', color: "white" }}>
           {/* Real Website Navbar */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 40px", width: "100%", background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 100%)", boxShadow: "0 4px 15px rgba(0,0,0,0.2)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 40px", width: "100%", background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 100%)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-               {/* Profile Avatar */}
-               <div style={{ backgroundColor: "#312e81", borderRadius: "50%", width: "40px", height: "40px", border: "2px solid white", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: "bold", fontSize: "18px" }}>G</div>
-               
-               {/* Notification Bell with Dot */}
-               <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.15)" }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                    <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
-                  </svg>
-                  <div style={{ position: "absolute", top: "8px", right: "8px", width: "10px", height: "10px", backgroundColor: "#ef4444", borderRadius: "50%", border: "1.5px solid #7c3aed" }} />
-               </div>
-
-               {/* "Add" Button */}
-               <div style={{ backgroundColor: "#ff0099", padding: "8px 22px", borderRadius: "20px", fontSize: "16px", fontWeight: "900", marginLeft: "10px", display: "flex", boxShadow: "0 4px 10px rgba(0,0,0,0.2)" }}>
-                  {shapeText("أضف")}
-               </div>
+              <div style={{ backgroundColor: "#ff0099", borderRadius: "50%", width: "38px", height: "38px", border: "2px solid white" }} />
+              <div style={{ backgroundColor: "rgba(255,255,255,0.2)", borderRadius: "50%", width: "38px", height: "38px" }} />
+              {/* "Add" Button like the site */}
+              <div style={{ backgroundColor: "#ff0099", padding: "6px 18px", borderRadius: "20px", fontSize: "16px", fontWeight: "bold", marginLeft: "10px", display: "flex" }}>
+                {shapeText("أضف")}
+              </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <span style={{ fontSize: "30px", fontWeight: "900", letterSpacing: "-1px" }}>{shapeText("أفشات")}</span>
-              <div style={{ backgroundColor: "#ffca28", borderRadius: "10px", width: "38px", height: "38px", display: "flex", alignItems: "center", justifyContent: "center", color: "black", fontWeight: "900", fontSize: "22px" }}>{shapeText("أ")}</div>
+              <span style={{ fontSize: "28px", fontWeight: "900" }}>{shapeText("أفشات")}</span>
+              <div style={{ backgroundColor: "#ffca28", borderRadius: "8px", width: "35px", height: "35px", display: "flex", alignItems: "center", justifyContent: "center", color: "black", fontWeight: "900" }}>{shapeText("أ")}</div>
             </div>
           </div>
 
           {/* Setup Section */}
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px 80px", backgroundImage: "radial-gradient(circle at center, #2e1065 0%, #0d0216 100%)" }}>
-             <div style={{ display: "flex", gap: "10px", marginBottom: "20px", alignSelf: "flex-end" }}>
-                <div style={{ backgroundColor: "#4f46e5", padding: "4px 15px", borderRadius: "8px", fontSize: "14px" }}>{shapeText("#أفشات")}</div>
-                <div style={{ backgroundColor: "#312e81", padding: "4px 15px", borderRadius: "8px", fontSize: "14px" }}>{shapeText("#كوميديا")}</div>
-             </div>
-             {setupLines.map((line, i) => (
-               <div key={i} style={{ fontSize: "40px", fontWeight: "800", lineHeight: "1.3", marginBottom: "5px", display: "flex", textAlign: "center" }}>{line}</div>
-             ))}
+            <div style={{ display: "flex", gap: "10px", marginBottom: "20px", alignSelf: "flex-end" }}>
+              <div style={{ backgroundColor: "#4f46e5", padding: "4px 15px", borderRadius: "8px", fontSize: "14px" }}>{shapeText("#أفشات")}</div>
+              <div style={{ backgroundColor: "#312e81", padding: "4px 15px", borderRadius: "8px", fontSize: "14px" }}>{shapeText("#كوميديا")}</div>
+            </div>
+            {setupLines.map((line, i) => (
+              <div key={i} style={{ fontSize: "40px", fontWeight: "800", lineHeight: "1.3", marginBottom: "5px", display: "flex", textAlign: "center" }}>{line}</div>
+            ))}
           </div>
 
           {/* Punchline Section */}
           <div style={{ flex: 1.2, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px 80px", background: "linear-gradient(135deg, #9333ea, #db2777)", position: "relative" }}>
-             {punchlineLines.map((line, i) => (
-               <div key={i} style={{ fontSize: "36px", fontWeight: "700", lineHeight: "1.4", display: "flex", color: "white", textAlign: "center" }}>{line}</div>
-             ))}
-             <div style={{ position: "absolute", bottom: "30px", right: "60px", display: "flex", gap: "25px" }}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}><span style={{ fontSize: "28px" }}>🔥</span><span style={{ fontSize: "14px" }}>%4</span></div>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}><span style={{ fontSize: "28px" }}>😂</span><span style={{ fontSize: "14px" }}>41</span></div>
-             </div>
-             <div style={{ position: "absolute", bottom: "30px", left: "60px", fontSize: "20px", fontWeight: "900", opacity: 0.7 }}>afchat.fun</div>
+            {punchlineLines.map((line, i) => (
+              <div key={i} style={{ fontSize: "36px", fontWeight: "700", lineHeight: "1.4", display: "flex", color: "white", textAlign: "center" }}>{line}</div>
+            ))}
+            <div style={{ position: "absolute", bottom: "30px", right: "60px", display: "flex", gap: "25px" }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}><span style={{ fontSize: "28px" }}>🔥</span><span style={{ fontSize: "14px" }}>%4</span></div>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}><span style={{ fontSize: "28px" }}>😂</span><span style={{ fontSize: "14px" }}>41</span></div>
+            </div>
+            <div style={{ position: "absolute", bottom: "30px", left: "60px", fontSize: "20px", fontWeight: "900", opacity: 0.7 }}>afchat.fun</div>
           </div>
         </div>
       ),
@@ -145,7 +136,7 @@ export async function GET(request: NextRequest) {
   } catch (err: any) { return new Response(`Error: ${err.message}`, { status: 500 }); }
 }
 
-function shapeText(s: string) { 
+function shapeText(s: string) {
   const shaped = shapeArabic(s);
-  return shaped.split('').reverse().join(''); 
+  return shaped.split('').reverse().join('');
 }
