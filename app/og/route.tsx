@@ -133,15 +133,6 @@ export async function GET(request: NextRequest) {
     );
   } catch (err: any) { return new Response(`Error: ${err.message}`, { status: 500 }); }
 }
-div>
-            <div style={{ position: "absolute", bottom: "30px", left: "60px", fontSize: "20px", fontWeight: "900", opacity: 0.7 }}>afchat.fun</div>
-          </div>
-        </div>
-      ),
-      { width: 1200, height: 630, ...(fontData ? { fonts: [{ name: "Cairo", data: fontData, style: "normal", weight: 700 }] } : {}) }
-    );
-  } catch (err: any) { return new Response(`Error: ${err.message}`, { status: 500 }); }
-}
 
 function shapeText(s: string) {
   const shaped = shapeArabic(s);
