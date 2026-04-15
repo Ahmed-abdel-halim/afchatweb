@@ -42,8 +42,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const description = topPunchline ? topPunchline.text : "أفضل قفشات ومواقف أفشات";
   const title = `${setup.text} | أفشات`;
   
-  // Use numeric ID for the image URL to be totally ASCII/English
-  const ogImageUrl = `https://afchat.fun/og?id=${setup.id}&v=2.2`;
+  // v=3.0 to force Twitter to re-crawl after the design fix
+  const ogImageUrl = `https://afchat.fun/og?id=${setup.id}&v=3.0&t=${Date.now()}`;
 
   return {
     title,
