@@ -1,13 +1,12 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 
-// دالة متطورة لمعالجة النصوص العربية وعكسها لتعمل 100% في تويتر
 function shapeText(str: string): string {
   const map: Record<string, string[]> = {
     'ا':['ا','ا','ﺎ','ﺎ'],'أ':['أ','أ','ﺄ','ﺄ'],'إ':['إ','إ','ﺈ','ﺈ'],'آ':['آ','آ','ﺂ','ﺂ'],
     'ب':['ب','ﺑ','ﺒ','ﺐ'],'ت':['ت','ﺗ','ﺘ','ﺖ'],'ث':['ث','ﺛ','ﺜ','ﺚ'],
     'ج':['ج','ﺟ','ﺠ','ﺞ'],'ح':['ح','ﺣ','ﺤ','ﺢ'],'خ':['خ','ﺧ','ﺨ','ﺦ'],
-    'د':['د','د','ﺪ','ﺪ'],'ذ':['ذ','ذ','ﺬ','ﺬ'],'ر':['ر','ر','ﺮ','ﺮ'],'ز':['ز','ز','ﺰ','ﺰ'],
+    'د':['د','د','ﺪ','ﺪ'],'ذ':['ذ','ذ','ﺬ','ﺬ'],'ر':['ر','ر','ﺮ','ﺮ'],'ز':['ز','ز','ﺰ','ز'],
     'س':['س','ﺳ','ﺴ','ﺲ'],'ش':['ش','ﺷ','ﺸ','ﺶ'],'ص':['ص','ﺻ','ﺼ','ﺺ'],'ض':['ض','ﺿ','ﻀ','ﺾ'],
     'ط':['ط','ﻃ','ﻄ','ﻂ'],'ظ':['ظ','ﻇ','ﻈ','ﻆ'],'ع':['ع','ﻋ','ﻌ','ﻊ'],'غ':['غ','ﻏ','ﻐ','ﻎ'],
     'ف':['ف','ﻓ','ﻔ','ﻒ'],'ق':['ق','ﻗ','ﻘ','ﻖ'],'ك':['ك','ﻛ','ﻜ','ﻚ'],'ل':['ل','ﻟ','ﻠ','ﻞ'],
@@ -45,10 +44,16 @@ export async function GET(request: NextRequest) {
     let setup = "قفشة من أفشات الموقع";
     let punchline = "أروع الردود الكوميدية تجدها هنا";
 
-    // جلب الخط (باستخدام رابط مباشر سريع جداً)
-    const fontData = await fetch(
-      new URL("https://unpkg.com/@fontsource/cairo@5.0.8/files/cairo-arabic-700-normal.woff")
-    ).then((res) => res.arrayBuffer());
+    // جلب الخط بأمان (Fail-Safe)
+    let fontData: ArrayBuffer | null = null;
+    try {
+      const fontRes = await fetch("https://unpkg.com/@fontsource/cairo@5.0.8/files/cairo-arabic-700-normal.woff", {
+        signal: AbortSignal.timeout(4000)
+      });
+      if (fontRes.ok) fontData = await fontRes.arrayBuffer();
+    } catch (e) {
+      console.warn("Font fetch failed, falling back to sans-serif");
+    }
 
     if (id) {
        try {
@@ -74,68 +79,46 @@ export async function GET(request: NextRequest) {
     return new ImageResponse(
       (
         <div style={{
-          height: "100%", width: "100%", display: "flex", flexDirection: "column", backgroundColor: "#0d0216", fontFamily: '"Cairo"', color: "white"
+          height: "100%", width: "100%", display: "flex", flexDirection: "column", backgroundColor: "#0d0216", fontFamily: fontData ? '"Cairo"' : "sans-serif", color: "white"
         }}>
-          {/* Navbar (Matched Website) */}
+          {/* Navbar matched to website */}
           <div style={{ 
             display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 50px", width: "100%",
-            background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 100%)", boxShadow: "0 4px 20px rgba(0,0,0,0.3)"
+            background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 100%)"
           }}>
-            <div style={{ display: "flex", gap: "10px" }}>
+            <div style={{ display: "flex", gap: "12px" }}>
               <div style={{ backgroundColor: "#ff0099", borderRadius: "50%", width: "35px", height: "35px", border: "2px solid white" }} />
               <div style={{ backgroundColor: "rgba(255,255,255,0.2)", borderRadius: "50%", width: "35px", height: "35px" }} />
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <span style={{ fontSize: "30px", fontWeight: "900", color: "white" }}>{logoName}</span>
-              <div style={{ backgroundColor: "#ffca28", borderRadius: "10px", width: "38px", height: "38px", display: "flex", alignItems: "center", justifyContent: "center", color: "black", fontWeight: "900", fontSize: "22px" }}>
+              <span style={{ fontSize: "30px", fontWeight: "900" }}>{logoName}</span>
+              <div style={{ backgroundColor: "#ffca28", borderRadius: "8px", width: "35px", height: "35px", display: "flex", alignItems: "center", justifyContent: "center", color: "black", fontWeight: "900" }}>
                 {shapeText("أ")}
               </div>
             </div>
           </div>
 
-          {/* Setup Part */}
-          <div style={{
-            flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 100px", textAlign: "center",
-            backgroundImage: "radial-gradient(circle at center, #2e1065 0%, #0d0216 100%)"
-          }}>
-            <div style={{ display: "flex", gap: "12px", marginBottom: "30px", alignSelf: "flex-end" }}>
-               <div style={{ backgroundColor: "#4f46e5", padding: "5px 18px", borderRadius: "10px", fontSize: "16px", fontWeight: "bold" }}>{shapeText("#أفشات")}</div>
-               <div style={{ backgroundColor: "#1e1b4b", border: "1px solid #4f46e5", padding: "5px 18px", borderRadius: "10px", fontSize: "16px" }}>{shapeText("#كوميديا")}</div>
-            </div>
-            <div style={{ fontSize: "44px", fontWeight: "900", lineHeight: "1.4", display: "flex", textShadow: "0 4px 10px rgba(0,0,0,0.5)" }}>
-              {displaySetup}
-            </div>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 100px", textAlign: "center", backgroundImage: "radial-gradient(circle at center, #2e1065 0%, #0d0216 100%)" }}>
+             <div style={{ display: "flex", gap: "10px", marginBottom: "20px", alignSelf: "flex-end" }}>
+               <div style={{ backgroundColor: "#4f46e5", padding: "5px 15px", borderRadius: "8px", fontSize: "16px" }}>{shapeText("#أفشات")}</div>
+               <div style={{ backgroundColor: "#1e1b4b", border: "1px solid #4f46e5", padding: "5px 15px", borderRadius: "8px", fontSize: "16px" }}>{shapeText("#كوميديا")}</div>
+             </div>
+             <div style={{ fontSize: "44px", fontWeight: "900", lineHeight: "1.4", display: "flex" }}>{displaySetup}</div>
           </div>
 
-          {/* Punchline Part */}
-          <div style={{
-            flex: 1.2, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 100px", textAlign: "center",
-            background: "linear-gradient(135deg, #9333ea, #db2777)", position: "relative", boxShadow: "inset 0 10px 40px rgba(0,0,0,0.1)"
-          }}>
-             <div style={{ fontSize: "40px", fontWeight: "800", lineHeight: "1.6", display: "flex", color: "white", textShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>
-               {displayPunchline}
-             </div>
-             
-             {/* Interaction UI */}
+          <div style={{ flex: 1.2, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 100px", textAlign: "center", background: "linear-gradient(135deg, #9333ea, #db2777)", position: "relative" }}>
+             <div style={{ fontSize: "40px", fontWeight: "800", lineHeight: "1.5", display: "flex" }}>{displayPunchline}</div>
              <div style={{ position: "absolute", bottom: "40px", right: "60px", display: "flex", gap: "30px" }}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "5px" }}>
-                   <span style={{ fontSize: "32px" }}>🔥</span>
-                   <span style={{ fontSize: "16px", fontWeight: "bold" }}>%4</span>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "5px" }}>
-                   <span style={{ fontSize: "32px" }}>😂</span>
-                   <span style={{ fontSize: "16px", fontWeight: "bold" }}>41</span>
-                </div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}><span style={{ fontSize: "32px" }}>🔥</span><span style={{ fontSize: "16px" }}>%4</span></div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}><span style={{ fontSize: "32px" }}>😂</span><span style={{ fontSize: "16px" }}>41</span></div>
              </div>
-             <div style={{ position: "absolute", bottom: "40px", left: "60px", fontSize: "22px", fontWeight: "900", color: "white", opacity: 0.8 }}>
-                afchat.fun
-             </div>
+             <div style={{ position: "absolute", bottom: "40px", left: "60px", fontSize: "22px", fontWeight: "900", opacity: 0.8 }}>afchat.fun</div>
           </div>
         </div>
       ),
       {
         width: 1200, height: 630,
-        fonts: [{ name: "Cairo", data: fontData, style: "normal", weight: 700 }]
+        ...(fontData ? { fonts: [{ name: "Cairo", data: fontData, style: "normal", weight: 700 }] } : {})
       }
     );
   } catch (err: any) {
