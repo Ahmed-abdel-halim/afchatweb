@@ -1,6 +1,49 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 
+function shapeText(str: string): string {
+  const map: Record<string, string[]> = {
+    'ا':['ا','ا','ﺎ','ﺎ'],'أ':['أ','أ','ﺄ','ﺄ'],'إ':['إ','إ','ﺈ','ﺈ'],'آ':['آ','آ','ﺂ','ﺂ'],
+    'ب':['ب','ﺑ','ﺒ','ﺐ'],'ت':['ت','ﺗ','ﺘ','ﺖ'],'ث':['ث','ﺛ','ﺜ','ﺚ'],
+    'ج':['ج','ﺟ','ﺠ','ﺞ'],'ح':['ح','ﺣ','ﺤ','ﺢ'],'خ':['خ','ﺧ','ﺨ','ﺦ'],
+    'د':['د','د','ﺪ','ﺪ'],'ذ':['ذ','ذ','ﺬ','ﺬ'],'ر':['ر','ر','ﺮ','ﺮ'],'ز':['ز','ز','ﺰ','ﺰ'],
+    'س':['س','ﺳ','ﺴ','ﺲ'],'ش':['ش','ﺷ','ﺸ','ﺶ'],'ص':['ص','ﺻ','ﺼ','ﺺ'],'ض':['ض','ﺿ','ﻀ','ﺾ'],
+    'ط':['ط','ﻃ','ﻄ','ﻂ'],'ظ':['ظ','ﻇ','ﻈ','ﻆ'],'ع':['ع','ﻋ','ﻌ','ﻊ'],'غ':['غ','ﻏ','ﻐ','ﻎ'],
+    'ف':['ف','ﻓ','ﻔ','ﻒ'],'ق':['ق','ﻗ','ﻘ','ﻖ'],'ك':['ك','ﻛ','ﻜ','ﻚ'],'ل':['ل','ﻟ','ﻠ','ﻞ'],
+    'م':['م','ﻣ','ﻤ','ﻢ'],'ن':['ن','ﻧ','ﻨ','ﻦ'],'ه':['ه','ﻫ','ﻬ','ﻪ'],'و':['و','و','ﻮ','ﻮ'],
+    'ي':['ي','ﻳ','ﻴ','ﻲ'],'ى':['ى','ى','ﻰ','ﻰ'],'ة':['ة','ة','ﺔ','ﺔ'],'ؤ':['ؤ','ؤ','ﺆ','ﺆ'],
+    'ئ':['ئ','ﺋ','ﺌ','ﺊ'],'لا':['لا','لا','ﻼ','ﻼ'],'لأ':['لأ','لأ','ﻸ','ﻸ'],'لإ':['لإ','لإ','ﻺ','ﻺ'],'لآ':['لآ','لآ','ﻶ','ﻶ']
+  };
+  const nc = ["د","ذ","ر","ز","و","ا","أ","إ","آ","ؤ","ى","ة"];
+  
+  let shaped = "";
+  for(let i=0; i<str.length; i++) {
+    const c = str[i], n = str[i+1], p = str[i-1];
+    if(!map[c]) { shaped+=c; continue; }
+    
+    const cP = p && map[p] && !nc.includes(p);
+    const cN = n && map[n] && !nc.includes(c);
+    
+    if(c==='ل' && n && ['ا','أ','إ','آ'].includes(n)) {
+      const lig = 'ل'+n;
+      shaped += cP ? map[lig][2] : map[lig][0];
+      i++; continue;
+    }
+    
+    let f = 0;
+    if(!cP && cN) f=1; else if(cP && cN) f=2; else if(cP && !cN) f=3;
+    shaped += map[c][f];
+  }
+  
+  const parts = shaped.split(/([a-zA-Z0-9.\-_]+)/);
+  let res = "";
+  for(let i=parts.length-1; i>=0; i--) {
+    if(/^[a-zA-Z0-9.\-_]+$/.test(parts[i])) res += parts[i];
+    else res += parts[i].split('').reverse().join('');
+  }
+  return res;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -15,12 +58,12 @@ export async function GET(request: NextRequest) {
       const fontRes = await fetch("https://unpkg.com/@fontsource/cairo@5.0.8/files/cairo-arabic-700-normal.woff", { cache: "force-cache" });
       if (fontRes.ok) {
         const buf = await fontRes.arrayBuffer();
-        if (buf.byteLength > 10000) { // Verify it's actually a font, not a 1KB HTML block page
+        if (buf.byteLength > 10000) {
           fontData = buf;
         }
       }
     } catch (e: any) {
-      console.error("Unpkg CDN Font Fetch Error:", e.message);
+      console.error("Unpkg CDN Font Fetch Error");
     }
 
     // 2. Fetch Data
@@ -51,6 +94,10 @@ export async function GET(request: NextRequest) {
 
     setup = setup.length > 120 ? setup.slice(0, 117) + "..." : setup;
     punchline = punchline.length > 120 ? punchline.slice(0, 117) + "..." : punchline;
+    
+    // Apply Arabic Shaping and RTL Text Magic
+    const displaySetup = shapeText(`"${setup}"`);
+    const displayPunchline = shapeText(punchline);
 
     return new ImageResponse(
       (
@@ -67,14 +114,14 @@ export async function GET(request: NextRequest) {
             padding: "60px",
             color: "white",
             textAlign: "center",
-            fontFamily: fontData ? "Cairo" : undefined,
+            fontFamily: fontData ? '"Cairo"' : "sans-serif",
           }}
         >
-          <div style={{ fontSize: 48, fontWeight: 800, marginBottom: 35, display: "flex", direction: "rtl", lineHeight: 1.3 }}>
-            "{setup}"
+          <div style={{ fontSize: 48, fontWeight: 800, marginBottom: 35, display: "flex", lineHeight: 1.3 }}>
+            {displaySetup}
           </div>
-          <div style={{ fontSize: 38, color: "#ffca28", backgroundColor: "rgba(255,202,40,0.15)", padding: "20px 50px", borderRadius: "24px", display: "flex", direction: "rtl", lineHeight: 1.3 }}>
-            {punchline}
+          <div style={{ fontSize: 38, color: "#ffca28", backgroundColor: "rgba(255,202,40,0.15)", padding: "20px 50px", borderRadius: "24px", display: "flex", lineHeight: 1.3 }}>
+            {displayPunchline}
           </div>
           <div style={{ position: "absolute", bottom: 40, right: 60, color: "#ffca28", fontSize: 24, fontWeight: 900, opacity: 0.8 }}>
             Afchat.fun
