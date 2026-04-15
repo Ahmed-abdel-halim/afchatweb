@@ -134,7 +134,3 @@ export async function GET(request: NextRequest) {
   } catch (err: any) { return new Response(`Error: ${err.message}`, { status: 500 }); }
 }
 
-function shapeText(s: string) {
-  const shaped = shapeArabic(s);
-  return shaped.split('').reverse().join('');
-}
